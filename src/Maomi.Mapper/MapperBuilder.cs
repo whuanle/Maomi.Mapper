@@ -133,7 +133,10 @@ namespace Maomi.Mapper
 			where T2 : struct
 			=> Mapper.AS<T1, T2>(t1);
 
-		// 允许映射到私有属性字段
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
 		public override Mapper Build()
 		{
 			foreach (var item in _mapInfo.MemberInfos)
