@@ -12,7 +12,7 @@ namespace Maomi.Mapper
 		/// <summary>
 		/// 包括私有字段
 		/// </summary>
-		public bool IncludePrivateField { get; set; } = false;
+		public bool IncludePrivate { get; set; } = false;
 
 		/// <summary>
 		/// 自动映射，如果有字段/属性没有配置映射规则，则自动映射

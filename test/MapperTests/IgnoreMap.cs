@@ -1,3 +1,4 @@
+using Maomi.Mapper;
 namespace MapperTests;
 
 public class IgnoreMap

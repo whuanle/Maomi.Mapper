@@ -195,7 +195,7 @@ namespace Maomi.Mapper
 				if (item is FieldInfo field)
 				{
 					// 如果不处理私有字段
-					if (field.IsPrivate && !mapInfo.MapOption.IncludePrivateField) continue;
+					if (field.IsPrivate && !mapInfo.MapOption.IncludePrivate) continue;
 
 					// 忽略运行时生成的属性的私有字段
 					if (item.Name.EndsWith(">k__BackingField")) continue;

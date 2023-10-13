@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Maomi.Mapper;
+using System.Reflection;
 
 public class ManualTest
 {
@@ -70,7 +71,11 @@ public class ManualTest
     public void SameCount_SameType_Private()
     {
         var mapper = new MaomiMapper();
-        var build = mapper.Bind<TestC, TestD>();
+        var build = mapper.Bind<TestC, TestD>(
+            option =>
+            {
+                option.IncludePrivate = true;
+            });
         build.Build();
         mapper.Bind<TestC, TestDD>().Build();
 
@@ -87,8 +92,8 @@ public class ManualTest
 
         Assert.Equal("A", b.ValueA);
         Assert.Equal("B", b.ValueB);
-        Assert.Equal("C", typeof(TestD).GetProperty("ValueC").GetValue(c));
-        Assert.Equal("D", typeof(TestD).GetField("ValueD").GetValue(c));
+        Assert.Equal("C", typeof(TestD).GetProperty("ValueC", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(b));
+        Assert.Equal("D", typeof(TestD).GetField("ValueD", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(b));
 
         Assert.Equal("A", c.ValueA);
         Assert.Equal("B", c.ValueB);

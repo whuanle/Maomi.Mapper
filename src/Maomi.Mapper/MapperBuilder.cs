@@ -175,7 +175,7 @@ namespace Maomi.Mapper
 					if (item.Name.EndsWith(">k__BackingField")) continue;
 
 					// 如果不处理私有字段
-					if (!_mapOption.IncludePrivateField && field.IsPrivate) continue;
+					if (!_mapOption.IncludePrivate && field.IsPrivate) continue;
 					Delegate assignDel = MaomiMapper.MapField<TSource, TTarget>(field, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}

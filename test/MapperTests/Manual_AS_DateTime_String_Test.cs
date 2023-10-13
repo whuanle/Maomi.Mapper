@@ -22,7 +22,7 @@ public class Manual_AS_DateTime_String_Test
             option.ConvertDateTime = value =>
             {
                 if (value is string str)
-                    return new DateTime(str);
+                    return DateTime.Parse(str);
                 throw new Exception("未能转换为时间");
             };
         }).Build();
