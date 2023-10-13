@@ -9,7 +9,7 @@ namespace Maomi.Mapper
 {
 	public abstract class MapperBuilder
 	{
-		public abstract Mapper Build();
+		public abstract MaomiMapper Build();
 	}
 
 	/// <summary>
@@ -21,11 +21,11 @@ namespace Maomi.Mapper
 		where TSource : class
 		where TTarget : class
 	{
-		private readonly Mapper _mapper;
+		private readonly MaomiMapper _mapper;
 		private readonly MapInfo _mapInfo;
 		private readonly MapOption _mapOption;
 
-		internal MapperBuilder(Mapper mapper, MapInfo mapInfo, MapOption mapOption)
+		internal MapperBuilder(MaomiMapper mapper, MapInfo mapInfo, MapOption mapOption)
 		{
 			_mapper = mapper;
 			_mapInfo = mapInfo;
@@ -45,7 +45,7 @@ namespace Maomi.Mapper
 		public MapperBuilder<TSource, TTarget> Ignore<TField>(Expression<Func<TTarget, TField>> field)
 		{
 			MemberInfo p = GetMember(field);
-			Mapper.SetDefaultValue<TTarget>(p);
+			MaomiMapper.SetDefaultValue<TTarget>(p);
 			return this;
 		}
 
@@ -73,7 +73,7 @@ namespace Maomi.Mapper
 
 			try
 			{
-				_mapInfo.Binds[p] = Mapper.BuildAssign<TSource, TTarget>(p, valueFunc);
+				_mapInfo.Binds[p] = MaomiMapper.BuildAssign<TSource, TTarget>(p, valueFunc);
 			}
 			catch (Exception ex)
 			{
@@ -142,13 +142,13 @@ namespace Maomi.Mapper
 		public static T2 AS<T1, T2>(T1 t1)
 			where T1 : struct
 			where T2 : struct
-			=> Mapper.AS<T1, T2>(t1);
+			=> MaomiMapper.AS<T1, T2>(t1);
 
 		/// <summary>
 		/// 预先构建，处理没被手动配置的字段
 		/// </summary>
 		/// <returns></returns>
-		public override Mapper Build()
+		public override MaomiMapper Build()
 		{
 			foreach (var item in _mapInfo.MemberInfos)
 			{
@@ -165,14 +165,14 @@ namespace Maomi.Mapper
 
 					// 如果不处理私有字段
 					if (!_mapOption.IncludePrivateField && field.IsPrivate) continue;
-					Delegate assignDel = Mapper.MapField<TSource, TTarget>(field, _mapOption);
+					Delegate assignDel = MaomiMapper.MapField<TSource, TTarget>(field, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}
 				else if (item is PropertyInfo property)
 				{
 					if (!property.CanWrite) continue;
 
-					Delegate assignDel = Mapper.MapProperty<TSource, TTarget>(property, _mapOption);
+					Delegate assignDel = MaomiMapper.MapProperty<TSource, TTarget>(property, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}
 			}

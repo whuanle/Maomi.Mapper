@@ -7,10 +7,10 @@ using System.Linq.Expressions;
 namespace Maomi.Mapper
 {
 	// 类型转换
-	public partial class Mapper
+	public partial class MaomiMapper
 	{
 		/// <summary>
-		/// <see cref="Mapper.AS{TSourceValue, TTargetValue}(TSourceValue)"/>
+		/// <see cref="MaomiMapper.AS{TSourceValue, TTargetValue}(TSourceValue)"/>
 		/// </summary>
 		private static readonly MethodInfo ASMethodInfo;
 

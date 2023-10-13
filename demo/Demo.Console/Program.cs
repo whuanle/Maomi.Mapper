@@ -55,7 +55,7 @@ namespace Demo.Console
 
 	public class MyMapper : IMapper
 	{
-		public override void Bind(Mapper mapper)
+		public override void Bind(MaomiMapper mapper)
 		{
 			// 手动绑定映射
 		}
@@ -66,13 +66,13 @@ namespace Demo.Console
 
 		public static void Main()
 		{
-			Mapper.BindTo<A, B>(option =>
+			MaomiMapper.BindTo<A, B>(option =>
 			{
 				option.AutoMap = true;
 				option.IsObjectReference = false;
 			})
 				// b.V = a.V + "a"
-				.Map(a => 1, b => b.V)
+				.Map(a => a.V + "a", b => b.V)
 				// 忽略 V1
 				.Ignore(x => x.V1)
 				// b.V2 = a.V
@@ -82,9 +82,9 @@ namespace Demo.Console
 				.Build();
 
 			// 扫描程序集
-			Mapper.Static.Scan();
+			MaomiMapper.Static.Scan();
 
-			var b = Mapper.MapTo<A, B>(new A()
+			var b = MaomiMapper.MapTo<A, B>(new A()
 			{
 				V = "1"
 			});

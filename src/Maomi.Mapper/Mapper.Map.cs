@@ -4,10 +4,10 @@ using System.Reflection;
 
 namespace Maomi.Mapper
 {
-	public partial class Mapper
+	public partial class MaomiMapper
 	{
 		/// <summary>
-		/// <see cref="Mapper.Map{TSource, TTarget}(TSource, TTarget)"/>
+		/// <see cref="MaomiMapper.Map{TSource, TTarget}(TSource, TTarget)"/>
 		/// </summary>
 		private static readonly MethodInfo MapMethodInfo;
 

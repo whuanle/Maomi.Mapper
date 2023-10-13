@@ -6,7 +6,7 @@
 	public abstract class IMapper
 	{
 		/// <summary>
-		/// 允许被全局静态 <see cref="Mapper"/> 使用
+		/// 允许被全局静态 <see cref="MaomiMapper"/> 使用
 		/// </summary>
 		public bool IsBindGlobal { get; protected set; }
 
@@ -14,6 +14,6 @@
 		/// 配置绑定
 		/// </summary>
 		/// <param name="mapper"></param>
-		public abstract void Bind(Mapper mapper);
+		public abstract void Bind(MaomiMapper mapper);
 	}
 }

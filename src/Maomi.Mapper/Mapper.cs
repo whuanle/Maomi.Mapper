@@ -10,19 +10,19 @@ namespace Maomi.Mapper
 	/// <summary>
 	/// 创建映射
 	/// </summary>
-	public partial class Mapper
+	public partial class MaomiMapper
 	{
 		// 静态实例
-		private static readonly Mapper Instance = new();
+		private static readonly MaomiMapper Instance = new();
 
 		/// <summary>
-		/// <see cref="Mapper.Bind{TSource, TTarget}(Action{MapOption}?)"/>
+		/// <see cref="MaomiMapper.Bind{TSource, TTarget}(Action{MapOption}?)"/>
 		/// </summary>
 		private static readonly MethodInfo BindMethodInfo;
 
-		static Mapper()
+		static MaomiMapper()
 		{
-			var ms = typeof(Mapper).GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+			var ms = typeof(MaomiMapper).GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
 			ASMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "AS")!;
 			MapMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "Map")!;
 			BindMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "Bind")!;
@@ -34,7 +34,7 @@ namespace Maomi.Mapper
 		/// <summary>
 		/// 全局静态实例
 		/// </summary>
-		public static Mapper Static => Instance;
+		public static MaomiMapper Static => Instance;
 
 		/// <summary>
 		/// 如果没有设置 A => B 类型的映射，则框架自动创建映射
