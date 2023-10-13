@@ -25,6 +25,7 @@ namespace Maomi.Mapper
 		/// <see cref="Int32"/>、
 		/// <see cref="UInt32"/>、
 		/// <see cref="Int64"/>、
+		/// <see cref="UInt64"/>、
 		/// <see cref="Single"/>、
 		/// <see cref="Double"/>、
 		/// <see cref="Decimal"/>、
@@ -112,6 +113,7 @@ namespace Maomi.Mapper
 		/// <see cref="Int32"/>、
 		/// <see cref="UInt32"/>、
 		/// <see cref="Int64"/>、
+		/// <see cref="UInt64"/>、
 		/// <see cref="Single"/>、
 		/// <see cref="Double"/>、
 		/// <see cref="Decimal"/>、

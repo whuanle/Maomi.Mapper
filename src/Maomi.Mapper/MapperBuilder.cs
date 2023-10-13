@@ -128,6 +128,7 @@ namespace Maomi.Mapper
 		/// <see cref="Int32"/>、
 		/// <see cref="UInt32"/>、
 		/// <see cref="Int64"/>、
+		/// <see cref="UInt64"/>、
 		/// <see cref="Single"/>、
 		/// <see cref="Double"/>、
 		/// <see cref="Decimal"/>、
@@ -143,6 +144,16 @@ namespace Maomi.Mapper
 			where T1 : struct
 			where T2 : struct
 			=> MaomiMapper.AS<T1, T2>(t1);
+
+		/// <summary>
+		/// 构建当前映射，并反向映射
+		/// </summary>
+		/// <returns></returns>
+		public MapperBuilder<TTarget, TSource> BuildAndReverse()
+		{
+			var mapper = Build();
+			return mapper.Bind<TTarget, TSource>();
+		}
 
 		/// <summary>
 		/// 预先构建，处理没被手动配置的字段

@@ -27,6 +27,8 @@ namespace Maomi.Mapper
 			MapMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "Map")!;
 			BindMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "Bind")!;
 		}
+		
+		public MaomiMapper(){}
 
 		// 记录映射信息
 		private readonly HashSet<MapperData> Maps = new();
