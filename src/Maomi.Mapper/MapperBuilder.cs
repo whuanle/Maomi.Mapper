@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -70,7 +71,17 @@ namespace Maomi.Mapper
 			//		b.Value = b.Value
 			// }
 
-			_mapInfo.Binds[p] = Mapper.BuildAssign<TSource, TTarget>(p, valueFunc);
+			try
+			{
+				_mapInfo.Binds[p] = Mapper.BuildAssign<TSource, TTarget>(p, valueFunc);
+			}
+			catch (Exception ex)
+			{
+				var typeName = "";
+				if (p is FieldInfo fieldInfo) typeName = fieldInfo.FieldType.Name;
+				else if (p is PropertyInfo propertyInfo) typeName = propertyInfo.PropertyType.Name;
+				throw new InvalidCastException($"生成表达式报错，$({typeName}){typeof(TTarget).Name}.{p.Name} = ({typeof(TSource).Name}) => $({typeof(TValue).Name}) ，{System.Environment.NewLine} 请检查自定义的取值表达式是否有误", ex);
+			}
 			return this;
 		}
 
@@ -94,14 +105,13 @@ namespace Maomi.Mapper
 			}
 			else
 			{
-				throw new NotSupportedException($"{body.ToString()} 不是有效的字段或属性");
+				throw new KeyNotFoundException($"{typeof(TTarget).Name} 中不存在名为 {body.ToString()} 的字段或属性，请检查表达式！");
 			}
 
 			var p = _mapInfo.MemberInfos.FirstOrDefault(x => x.Name == name);
 			if (p == null)
 			{
-				if (name == "-") throw new NotSupportedException($"未找到指定字段或属性：{body.ToString()}");
-				else throw new NotSupportedException($"{name} 不是有效的字段或属性");
+				throw new KeyNotFoundException($"{typeof(TTarget).Name} 中不存在名为 {body.ToString()} 的字段或属性，请检查表达式！");
 			}
 
 			return p;
@@ -121,8 +131,9 @@ namespace Maomi.Mapper
 		/// <see cref="Single"/>、
 		/// <see cref="Double"/>、
 		/// <see cref="Decimal"/>、
-		/// <see cref="Char"/> <br />
-		/// 注意，转换时可能会出现精确度丢失
+		/// <see cref="Char"/> 。<br />
+		/// 不支持 <see cref="DateTime"/> 。<br />
+		/// 注意，大类型转小类型等情况，转换时可能会出现精确度丢失。
 		/// </summary>
 		/// <typeparam name="T1"></typeparam>
 		/// <typeparam name="T2"></typeparam>
@@ -134,7 +145,7 @@ namespace Maomi.Mapper
 			=> Mapper.AS<T1, T2>(t1);
 
 		/// <summary>
-		/// 
+		/// 预先构建，处理没被手动配置的字段
 		/// </summary>
 		/// <returns></returns>
 		public override Mapper Build()
@@ -154,15 +165,14 @@ namespace Maomi.Mapper
 
 					// 如果不处理私有字段
 					if (!_mapOption.IncludePrivateField && field.IsPrivate) continue;
-
-					Delegate assignDel = Mapper.MapField<TSource, TTarget>(field, _mapOption.ObjectReference);
+					Delegate assignDel = Mapper.MapField<TSource, TTarget>(field, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}
 				else if (item is PropertyInfo property)
 				{
 					if (!property.CanWrite) continue;
 
-					Delegate assignDel = Mapper.MapProperty<TSource, TTarget>(property, _mapOption.ObjectReference);
+					Delegate assignDel = Mapper.MapProperty<TSource, TTarget>(property, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}
 			}

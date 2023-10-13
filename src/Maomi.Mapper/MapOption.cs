@@ -1,4 +1,8 @@
-﻿namespace Maomi.Mapper
+﻿using System;
+using System.ComponentModel;
+using System.Linq.Expressions;
+
+namespace Maomi.Mapper
 {
 	/// <summary>
 	/// 映射配置
@@ -19,6 +23,13 @@
 		/// 如果属性字段是对象且为相同类型，则保持引用。 <br />
 		/// 如果设置为 false，则会创建新的对象，再对字段逐个处理。
 		/// </summary>
-		public bool ObjectReference { get; set; } = true;
+		public bool IsObjectReference { get; set; } = true;
+
+		/// <summary>
+		/// 配置时间转换器。<br />
+		///  如果 b.Value 是 DateTime，而 a.Value 不是 DateTime，则需要配置转换器，否则会报错。
+		/// </summary>
+		/// <value></value>
+		public Func<object, DateTime>? ConvertDateTime { get; set; }
 	}
 }

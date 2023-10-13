@@ -35,7 +35,7 @@ namespace Demo.Console
 		public override Action<MapOption> MapOption => option =>
 		{
 			option.AutoMap = true;
-			option.ObjectReference = false;
+			option.IsObjectReference = false;
 		};
 	}
 
@@ -69,10 +69,10 @@ namespace Demo.Console
 			Mapper.BindTo<A, B>(option =>
 			{
 				option.AutoMap = true;
-				option.ObjectReference = false;
+				option.IsObjectReference = false;
 			})
 				// b.V = a.V + "a"
-				.Map(a => a.V + "a", b => b.V)
+				.Map(a => 1, b => b.V)
 				// 忽略 V1
 				.Ignore(x => x.V1)
 				// b.V2 = a.V

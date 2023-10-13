@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace Maomi.Mapper
 {
+	// 类型转换
 	public partial class Mapper
 	{
 		/// <summary>
 		/// <see cref="Mapper.AS{TSourceValue, TTargetValue}(TSourceValue)"/>
 		/// </summary>
 		private static readonly MethodInfo ASMethodInfo;
+
 
 		/// <summary>
 		/// 值类型映射，支持以下类型互转：<br />
@@ -24,8 +28,9 @@ namespace Maomi.Mapper
 		/// <see cref="Single"/>、
 		/// <see cref="Double"/>、
 		/// <see cref="Decimal"/>、
-		/// <see cref="Char"/> <br />
-		/// 注意，转换时可能会出现精确度丢失
+		/// <see cref="Char"/> 。<br />
+		/// 不支持 <see cref="DateTime"/> 。<br />
+		/// 注意，大类型转小类型等情况，转换时可能会出现精确度丢失。
 		/// </summary>
 		/// <typeparam name="TSourceValue">源值类型</typeparam>
 		/// <typeparam name="TTargetValue">转换后值类型</typeparam>
@@ -91,8 +96,79 @@ namespace Maomi.Mapper
 					return Unsafe.As<Char, TTargetValue>(ref v13);
 			}
 
-			throw new InvalidCastException($"无法将{typeof(TSourceValue).Name}转换为{typeof(TTargetValue).Name}");
+			throw new InvalidCastException(
+				$"不支持该类型字段的转换： {typeof(TSourceValue).Name}  => {typeof(TTargetValue).Name}");
 		}
 
+		/// <summary>
+		/// 类型转换
+		/// 值类型映射，支持以下类型互转：<br />
+		/// <see cref="String"/> 、
+		/// <see cref="Boolean"/>、
+		/// <see cref="SByte"/>、
+		/// <see cref="Byte"/>、
+		/// <see cref="Int16"/>、
+		/// <see cref="UInt16"/>、
+		/// <see cref="Int32"/>、
+		/// <see cref="UInt32"/>、
+		/// <see cref="Int64"/>、
+		/// <see cref="Single"/>、
+		/// <see cref="Double"/>、
+		/// <see cref="Decimal"/>、
+		/// <see cref="Char"/> 。<br />
+		/// 不支持 <see cref="DateTime"/> 。<br />
+		/// 注意，大类型转小类型等情况，转换时可能会出现精确度丢失。
+		/// </summary>
+		/// <param name="sourceValue"></param>
+		/// <typeparam name="TSourceValue"></typeparam>
+		/// <typeparam name="TTargetValue"></typeparam>
+		/// <returns></returns>
+		public static TTargetValue ASPrimitive<TSourceValue, TTargetValue>(TSourceValue sourceValue)
+		{
+			return ASHelper<TSourceValue, TTargetValue>.Convert(sourceValue);
+		}
+
+		private static class ASHelper<TSourceValue, TTargetValue>
+		{
+			private static readonly MethodInfo ASMethodInfo;
+			private delegate TTargetValue ASConverter(TSourceValue sourceValue);
+			private static readonly ASConverter ASConvert;
+
+			static ASHelper()
+			{
+				var ms = typeof(ASHelper<,>).GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+				ASMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "AS")!;
+
+				if (typeof(TTargetValue) == typeof(string))
+				{
+					ASConvert = (TSourceValue sourceValue) =>
+					{
+						if (sourceValue == null) return default!;
+						return (TTargetValue)(object)sourceValue.ToString()!;
+					};
+				}
+				else if (typeof(TTargetValue).IsValueType && typeof(TSourceValue).IsValueType)
+				{
+					ParameterExpression sourceParameter = Expression.Parameter(typeof(TSourceValue), "a");
+					var asMethodInfo = ASMethodInfo.MakeGenericMethod(typeof(TSourceValue), typeof(TTargetValue));
+					var call = Expression.Call(null, asMethodInfo, sourceParameter);
+					ASConvert = Expression.Lambda<ASConverter>(call, sourceParameter).Compile();
+				}
+				else
+				{
+					throw new InvalidCastException($"不支持 {typeof(TSourceValue).Name} => {typeof(TTargetValue).Name}");
+				}
+			}
+
+			/// <summary>
+			/// 转换为对应类型
+			/// </summary>
+			/// <param name="sourceValue"></param>
+			/// <returns></returns>
+			public static TTargetValue Convert(TSourceValue sourceValue)
+			{
+				return ASConvert(sourceValue);
+			}
+		}
 	}
 }

@@ -21,9 +21,9 @@ namespace Maomi.Mapper
 		/// <typeparam name="TSource">源类型</typeparam>
 		/// <typeparam name="TTarget">目标类型</typeparam>
 		/// <param name="targetField">b.Value 字段</param>
-		/// <param name="isObjectReference">当字段或属性为对象时，是否直接使用引用</param>
+		/// <param name="mapOption">映射配置</param>
 		/// <returns></returns>
-		internal static Delegate MapField<TSource, TTarget>(FieldInfo targetField, bool isObjectReference = true)
+		internal static Delegate MapField<TSource, TTarget>(FieldInfo targetField, MapOption mapOption)
 		{
 			// TSource a;
 			// TTarget b;
@@ -58,11 +58,12 @@ namespace Maomi.Mapper
 			if (sourceFieldTypeCode == TypeCode.Object && targetFieldTypeCode == TypeCode.Object)
 			{
 				// 相同类型，直接赋值
-				if ((sourceField.FieldType == targetField.FieldType) && isObjectReference)
+				if ((sourceField.FieldType == targetField.FieldType) && mapOption.IsObjectReference)
 				{
 					BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
 					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 				}
+				// 嵌套赋值
 				else
 				{
 					// (a , b) =>
@@ -86,10 +87,21 @@ namespace Maomi.Mapper
 				BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
 				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 			}
-			else if (sourceFieldTypeCode == TypeCode.DateTime || targetFieldTypeCode == TypeCode.DateTime)
+			else if (targetFieldTypeCode == TypeCode.DateTime)
+			{
+				if (mapOption.ConvertDateTime != null)
+				{
+					var call = Expression.Call(Expression.Constant(mapOption.ConvertDateTime.Target), mapOption.ConvertDateTime.Method, sourceMember);
+					BinaryExpression assign = Expression.Assign(targetMember, call);
+					return Expression.Lambda(call, sourceParameter, targetParameter).Compile();
+				}
+				throw new InvalidCastException(
+					$"自动创建规则出错： $({targetField.FieldType.Name}){typeof(TTarget).Name}.{targetField.Name} = $({sourceField.FieldType.Name}{typeof(TSource).Name}.{sourceField.Name}");
+			}
+			else if (sourceFieldTypeCode == TypeCode.DateTime)
 			{
 				throw new InvalidCastException(
-					$"不支持该类型字段的转换： ({sourceField.FieldType.Name} {targetField.Name}) => ({sourceField.FieldType.Name} {targetField.Name})");
+					$"自动创建规则出错： $({targetField.FieldType.Name}){typeof(TTarget).Name}.{targetField.Name} = $({sourceField.FieldType.Name}{typeof(TSource).Name}.{sourceField.Name}");
 			}
 			// 如果两者属于不同的类型，则自动转换类型，但是只支持 struct 类型，不包括 DateTime 类型
 			else
@@ -119,10 +131,10 @@ namespace Maomi.Mapper
 		/// <typeparam name="TSource">源类型</typeparam>
 		/// <typeparam name="TTarget">目标类型</typeparam>
 		/// <param name="targetField">目标属性 b.Value</param>
-		/// <param name="isObjectReference">当字段或属性为对象时，是否直接使用引用</param>
+		/// <param name="mapOption">映射配置</param>
 		/// <returns></returns>
 		/// <exception cref="InvalidCastException"></exception>
-		internal static Delegate MapProperty<TSource, TTarget>(PropertyInfo targetField, bool isObjectReference = true)
+		internal static Delegate MapProperty<TSource, TTarget>(PropertyInfo targetField, MapOption mapOption)
 		{
 			// TSource a;
 			// TTarget b;
@@ -157,11 +169,12 @@ namespace Maomi.Mapper
 			if (sourceFieldTypeCode == TypeCode.Object && targetFieldTypeCode == TypeCode.Object)
 			{
 				// 相同类型，直接赋值
-				if ((sourceField.PropertyType == targetField.PropertyType) && isObjectReference)
+				if ((sourceField.PropertyType == targetField.PropertyType) && mapOption.IsObjectReference)
 				{
 					BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
 					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 				}
+				// 嵌套赋值
 				else
 				{
 					// (a , b) =>
@@ -185,10 +198,21 @@ namespace Maomi.Mapper
 				BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
 				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 			}
-			else if (sourceFieldTypeCode == TypeCode.DateTime || targetFieldTypeCode == TypeCode.DateTime)
+			else if (targetFieldTypeCode == TypeCode.DateTime)
+			{
+				if (mapOption.ConvertDateTime != null)
+				{
+					var call = Expression.Call(Expression.Constant(mapOption.ConvertDateTime.Target), mapOption.ConvertDateTime.Method, sourceMember);
+					BinaryExpression assign = Expression.Assign(targetMember, call);
+					return Expression.Lambda(call, sourceParameter, targetParameter).Compile();
+				}
+				throw new InvalidCastException(
+					$"自动创建规则出错： $({targetField.PropertyType.Name}){typeof(TTarget).Name}.{targetField.Name} = $({sourceField.PropertyType.Name}{typeof(TSource).Name}.{sourceField.Name}");
+			}
+			else if (sourceFieldTypeCode == TypeCode.DateTime)
 			{
 				throw new InvalidCastException(
-					$"不支持该类型字段的转换： ({sourceField.PropertyType.Name} {targetField.Name}) => ({sourceField.PropertyType.Name} {targetField.Name})");
+					$"自动创建规则出错： $({targetField.PropertyType.Name}){typeof(TTarget).Name}.{targetField.Name} = $({sourceField.PropertyType.Name}{typeof(TSource).Name}.{sourceField.Name}");
 			}
 			// 如果两者属于不同的类型，则自动转换类型，但是只支持 struct 类型，不包括 DateTime 类型
 			else
@@ -199,7 +223,7 @@ namespace Maomi.Mapper
 				// }
 
 				// var value = Mapper.AS<TSource,TTarget>(a.Value);
-				var asMethodInfo = ASMethodInfo.MakeGenericMethod(sourceField.PropertyType, sourceField.PropertyType);
+				var asMethodInfo = ASMethodInfo.MakeGenericMethod(sourceField.PropertyType, targetField.PropertyType);
 				var call = Expression.Call(Expression.Constant(Instance), asMethodInfo, sourceMember);
 
 				// b.Value = value;
@@ -246,7 +270,6 @@ namespace Maomi.Mapper
 			BinaryExpression assign = Expression.Assign(targetMember, delegateCall);
 			return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 		}
-
 		/// <summary>
 		/// 设置默认值
 		/// </summary>

@@ -12,6 +12,7 @@ namespace Maomi.Mapper
 	/// </summary>
 	public partial class Mapper
 	{
+		// 静态实例
 		private static readonly Mapper Instance = new();
 
 		/// <summary>
@@ -54,17 +55,22 @@ namespace Maomi.Mapper
 			MapOption option = new MapOption();
 			if (action != null) action.Invoke(option);
 
-			var mapInfo = new MapInfo(typeof(TSource), typeof(TTarget), option);
-			var builder = new MapperBuilder<TSource, TTarget>(this, mapInfo, option);
-
 			MapperData? data = Maps.FirstOrDefault(x => x.MapInfo.Source == typeof(TSource) && x.MapInfo.Target == typeof(TTarget));
 			if (data == null)
 			{
+				var mapInfo = new MapInfo(typeof(TSource), typeof(TTarget), option);
+				var builder = new MapperBuilder<TSource, TTarget>(this, mapInfo, option);
+
 				data = new MapperData(builder, mapInfo);
 				Maps.Add(data);
+				return builder;
+			}
+			else
+			{
+				return (data.MapperBuilder as MapperBuilder<TSource, TTarget>)!;
 			}
 
-			return builder;
+
 		}
 
 		/// <summary>
@@ -79,6 +85,13 @@ namespace Maomi.Mapper
 			where TTarget : class
 			=> Instance.Bind<TSource, TTarget>(action);
 
+		/// <summary>
+		/// 绑定映射
+		/// </summary>
+		/// <param name="sourceType">源类型</param>
+		/// <param name="targetType">目标类型</param>
+		/// <param name="action">映射配置</param>
+		/// <returns></returns>
 		public void Bind(Type sourceType, Type targetType, Action<MapOption>? action = null)
 		{
 			var method = BindMethodInfo.MakeGenericMethod(sourceType, targetType);
@@ -88,12 +101,19 @@ namespace Maomi.Mapper
 		/// <summary>
 		/// 绑定映射
 		/// </summary>
-		/// <typeparam name="sourceType">源类型</typeparam>
-		/// <typeparam name="targetType">被映射的类型</typeparam>
+		/// <param name="sourceType">源类型</param>
+		/// <param name="targetType">被映射的类型</param>
 		/// <param name="action">映射配置</param>
 		public static void BindTo(Type sourceType, Type targetType, Action<MapOption>? action = null)
 			=> Instance.Bind(sourceType, targetType, action);
 
+		/// <summary>
+		/// 映射
+		/// </summary>
+		/// <param name="source">源对象</param>
+		/// <typeparam name="TSource">源类型</typeparam>
+		/// <typeparam name="TTarget">目标类型</typeparam>
+		/// <returns></returns>
 		public TTarget Map<TSource, TTarget>(TSource source)
 			where TSource : class
 			where TTarget : class, new()
@@ -119,6 +139,14 @@ namespace Maomi.Mapper
 			return target;
 		}
 
+		/// <summary>
+		/// 获取映射值
+		/// </summary>
+		/// <param name="source">源对象</param>
+		/// <param name="target">目标对象</param>
+		/// <typeparam name="TSource">源类型</typeparam>
+		/// <typeparam name="TTarget">被映射的类型</typeparam>
+		/// <returns></returns>
 		public static TTarget MapTo<TSource, TTarget>(TSource source, TTarget target)
 			where TSource : class
 			where TTarget : class
@@ -148,8 +176,10 @@ namespace Maomi.Mapper
 				}
 			}
 
-			if (mapperData == null) throw new Exception($"未创建 {typeof(TSource).Name} 到的映射 {typeof(TTarget).Name}");
+			if (mapperData == null) throw new InvalidCastException($"未创建 {typeof(TSource).Name} 到的映射 {typeof(TTarget).Name}，该错误为框架内部错误，请提交 Issue！");
+			// 如果开发者没有调用 Build()
 			if (!mapperData.IsBuild) mapperData.Build();
+
 			var mapInfo = mapperData.MapInfo;
 
 			// 对 TTarget 的字段或属性逐个映射
@@ -157,26 +187,37 @@ namespace Maomi.Mapper
 			{
 				// 已提前配置映射委托代码
 				bool hasFunc = mapInfo.Binds.TryGetValue(item, out var @delegate);
-				if (!hasFunc)
-				{
-					Debug.Assert(!hasFunc);
-					continue;
-				}
+				// 查找不到映射规则
+				if (!hasFunc) continue;
 
 				if (item is FieldInfo field)
 				{
 					// 如果不处理私有字段
-					if (!mapInfo.MapOption.IncludePrivateField && field.IsPrivate) continue;
+					if (field.IsPrivate && !mapInfo.MapOption.IncludePrivateField) continue;
 
 					// 忽略运行时生成的属性的私有字段
 					if (item.Name.EndsWith(">k__BackingField")) continue;
 
-					@delegate!.DynamicInvoke(source, target);
+					try
+					{
+						@delegate!.DynamicInvoke(source, target);
+					}
+					catch (Exception ex)
+					{
+						throw new InvalidCastException($"从 {typeof(TSource).Name} => [{field.FieldType.Name}]{typeof(TTarget).Name}.{field.Name} 出错，请检查异常信息： ", ex);
+					}
 				}
 				else if (item is PropertyInfo property)
 				{
 					if (!property.CanWrite) continue;
-					@delegate!.DynamicInvoke(source, target);
+					try
+					{
+						@delegate!.DynamicInvoke(source, target);
+					}
+					catch (Exception ex)
+					{
+						throw new InvalidCastException($"从 {typeof(TSource).Name}  =>   [{property.PropertyType.Name}]{typeof(TTarget).Name}.{property.Name} ，请检查异常信息：", ex);
+					}
 				}
 			}
 			return target;
@@ -185,8 +226,8 @@ namespace Maomi.Mapper
 		/// <summary>
 		/// 扫描程序集
 		/// </summary>
-		/// <param name="assemblies"></param>
-		/// <param name="mapFilter"></param>
+		/// <param name="assemblies">需要扫描的所有程序集</param>
+		/// <param name="mapFilter">过滤器</param>
 		public void Scan(Assembly[] assemblies, Func<Type, Type, bool>? mapFilter = null)
 		{
 			foreach (var assembly in assemblies)
@@ -207,9 +248,9 @@ namespace Maomi.Mapper
 					var optionAttribute = type.GetCustomAttribute<MapOptionAttribute>();
 					if (mapAttribute == null) continue;
 
-					foreach(var mapType in mapAttribute.Types)
+					foreach (var mapType in mapAttribute.Types)
 					{
-						if (mapFilter != null) 
+						if (mapFilter != null)
 							if (!mapFilter.Invoke(type, mapType)) continue;
 						this.Bind(type, mapType, optionAttribute?.MapOption);
 
@@ -217,7 +258,7 @@ namespace Maomi.Mapper
 						if (mapAttribute.IsReverse)
 						{
 							if (mapFilter != null)
-								if (!mapFilter.Invoke(mapType,type)) continue;
+								if (!mapFilter.Invoke(mapType, type)) continue;
 							this.Bind(mapType, type, optionAttribute?.MapOption);
 						}
 					}
