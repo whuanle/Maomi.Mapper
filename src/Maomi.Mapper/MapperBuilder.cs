@@ -7,13 +7,25 @@ using System.Reflection;
 
 namespace Maomi.Mapper
 {
+	/// <summary>
+	/// 
+	/// </summary>
 	public abstract class MapperBuilder
 	{
+		/// <summary>
+		/// 已被构建
+		/// </summary>
+		public bool IsBuild { get; protected set; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
 		public abstract MaomiMapper Build();
 	}
 
 	/// <summary>
-	/// 映射构建器，<see cref="TSource"/> => <see cref="TTarget"/>
+	/// 映射构建器
 	/// </summary>
 	/// <typeparam name="TSource">源类型</typeparam>
 	/// <typeparam name="TTarget">被映射的类型</typeparam>
@@ -24,6 +36,8 @@ namespace Maomi.Mapper
 		private readonly MaomiMapper _mapper;
 		private readonly MapInfo _mapInfo;
 		private readonly MapOption _mapOption;
+
+
 
 		internal MapperBuilder(MaomiMapper mapper, MapInfo mapInfo, MapOption mapOption)
 		{
@@ -45,7 +59,7 @@ namespace Maomi.Mapper
 		public MapperBuilder<TSource, TTarget> Ignore<TField>(Expression<Func<TTarget, TField>> field)
 		{
 			MemberInfo p = GetMember(field);
-			MaomiMapper.SetDefaultValue<TTarget>(p);
+			_mapInfo.Binds[p] = MaomiMapper.SetDefaultValue<TTarget>(p);
 			return this;
 		}
 
@@ -148,11 +162,12 @@ namespace Maomi.Mapper
 		/// <summary>
 		/// 构建当前映射，并反向映射
 		/// </summary>
+		/// <param name="action">映射配置</param>
 		/// <returns></returns>
-		public MapperBuilder<TTarget, TSource> BuildAndReverse()
+		public MapperBuilder<TTarget, TSource> BuildAndReverse(Action<MapOption>? action)
 		{
 			var mapper = Build();
-			return mapper.Bind<TTarget, TSource>();
+			return mapper.Bind<TTarget, TSource>(action);
 		}
 
 		/// <summary>
@@ -161,6 +176,7 @@ namespace Maomi.Mapper
 		/// <returns></returns>
 		public override MaomiMapper Build()
 		{
+			IsBuild = true;
 			foreach (var item in _mapInfo.MemberInfos)
 			{
 				bool hasDelegate = _mapInfo.Binds.TryGetValue(item, out _);
@@ -176,14 +192,14 @@ namespace Maomi.Mapper
 
 					// 如果不处理私有字段
 					if (!_mapOption.IncludePrivate && field.IsPrivate) continue;
-					Delegate assignDel = MaomiMapper.MapField<TSource, TTarget>(field, _mapOption);
+					Delegate assignDel = _mapper.MapField<TSource, TTarget>(field, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}
 				else if (item is PropertyInfo property)
 				{
 					if (!property.CanWrite) continue;
 
-					Delegate assignDel = MaomiMapper.MapProperty<TSource, TTarget>(property, _mapOption);
+					Delegate assignDel = _mapper.MapProperty<TSource, TTarget>(property, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}
 			}

@@ -59,7 +59,7 @@ namespace Maomi.Mapper
 
 		public override int GetHashCode()
 		{
-			return Source.GetHashCode() ^ Target.GetHashCode();
+			return HashCode.Combine(Source, Target);
 		}
 
 		public override bool Equals(object? obj)

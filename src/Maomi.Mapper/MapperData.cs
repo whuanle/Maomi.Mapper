@@ -16,7 +16,7 @@ namespace Maomi.Mapper
 		/// <summary>
 		/// 是否已经构建整个类型的映射
 		/// </summary>
-		public bool IsBuild { get; private set; } = false;
+		public bool IsBuild => this.MapperBuilder.IsBuild;
 
 		/// <summary>
 		/// 映射构建器
@@ -34,7 +34,6 @@ namespace Maomi.Mapper
 		public void Build()
 		{
 			if (IsBuild == true) return;
-			IsBuild = true;
 			MapperBuilder.Build();
 		}
 

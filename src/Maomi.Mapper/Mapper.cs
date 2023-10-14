@@ -24,11 +24,14 @@ namespace Maomi.Mapper
 		{
 			var ms = typeof(MaomiMapper).GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
 			ASMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "AS")!;
-			MapMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "Map")!;
+			MapMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.GetParameters().Length == 2 && x.Name == "Map")!;
 			BindMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "Bind")!;
 		}
-		
-		public MaomiMapper(){}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public MaomiMapper() { }
 
 		// 记录映射信息
 		private readonly HashSet<MapperData> Maps = new();
@@ -61,9 +64,10 @@ namespace Maomi.Mapper
 			if (data == null)
 			{
 				var mapInfo = new MapInfo(typeof(TSource), typeof(TTarget), option);
-				var builder = new MapperBuilder<TSource, TTarget>(this, mapInfo, option);
 
+				var builder = new MapperBuilder<TSource, TTarget>(this, mapInfo, option);
 				data = new MapperData(builder, mapInfo);
+
 				Maps.Add(data);
 				return builder;
 			}
@@ -71,8 +75,6 @@ namespace Maomi.Mapper
 			{
 				return (data.MapperBuilder as MapperBuilder<TSource, TTarget>)!;
 			}
-
-
 		}
 
 		/// <summary>
@@ -94,10 +96,10 @@ namespace Maomi.Mapper
 		/// <param name="targetType">目标类型</param>
 		/// <param name="action">映射配置</param>
 		/// <returns></returns>
-		public void Bind(Type sourceType, Type targetType, Action<MapOption>? action = null)
+		public MapperBuilder Bind(Type sourceType, Type targetType, Action<MapOption>? action = null)
 		{
 			var method = BindMethodInfo.MakeGenericMethod(sourceType, targetType);
-			method.Invoke(this, new object?[] { action });
+			return (MapperBuilder)method.Invoke(this, new object?[] { action })!;
 		}
 
 		/// <summary>
@@ -236,12 +238,12 @@ namespace Maomi.Mapper
 			{
 				foreach (var type in assembly.GetTypes())
 				{
-					if (type.IsAssignableTo(typeof(IMapper)))
+					if (type.IsAssignableTo(typeof(IMapper)) && type != typeof(IMapper))
 					{
 						var mapper = Activator.CreateInstance(type) as IMapper;
 						if (mapper != null)
 						{
-							mapper.Bind(Instance);
+							mapper.Bind(this);
 						}
 						continue;
 					}
@@ -254,14 +256,14 @@ namespace Maomi.Mapper
 					{
 						if (mapFilter != null)
 							if (!mapFilter.Invoke(type, mapType)) continue;
-						this.Bind(type, mapType, optionAttribute?.MapOption);
+						this.Bind(type, mapType, optionAttribute?.MapOption).Build();
 
 						// 反向绑定
 						if (mapAttribute.IsReverse)
 						{
 							if (mapFilter != null)
 								if (!mapFilter.Invoke(mapType, type)) continue;
-							this.Bind(mapType, type, optionAttribute?.MapOption);
+							this.Bind(mapType, type, optionAttribute?.MapOption).Build();
 						}
 					}
 				}
@@ -269,7 +271,7 @@ namespace Maomi.Mapper
 		}
 
 		// 不扫描的程序集
-		private static readonly string[] CLRAssembly = new string[] { "System.", "Microsoft." };
+		private static readonly string[] CLRAssembly = new string[] { "System.", "Microsoft.", "Newtonsoft.Json" };
 
 		/// <summary>
 		/// 扫描当前进程所有程序集。<br />
@@ -281,7 +283,7 @@ namespace Maomi.Mapper
 		{
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			// 不扫描 CLR 程序集
-			assemblies = assemblies.Where(x => CLRAssembly.Any(c => x.GetName().Name?.StartsWith(c) == true)).ToArray();
+			assemblies = assemblies.Where(x => !CLRAssembly.Any(c => x.GetName().Name?.StartsWith(c) == true)).ToArray();
 			if (assemblyFilter != null)
 			{
 				List<Assembly> list = new List<Assembly>();

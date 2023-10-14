@@ -1,6 +1,7 @@
-using System.Runtime.InteropServices;
 using Maomi.Mapper;
 using System.Reflection;
+
+namespace MapperTests;
 
 public class ManualTest
 {

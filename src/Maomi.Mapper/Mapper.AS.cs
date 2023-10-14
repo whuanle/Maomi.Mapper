@@ -31,7 +31,7 @@ namespace Maomi.Mapper
 		/// <see cref="Decimal"/>、
 		/// <see cref="Char"/> 。<br />
 		/// 不支持 <see cref="DateTime"/> 。<br />
-		/// 注意，大类型转小类型等情况，转换时可能会出现精确度丢失。
+		/// 注意，浮点型转非浮点型，会出乎意料之外。
 		/// </summary>
 		/// <typeparam name="TSourceValue">源值类型</typeparam>
 		/// <typeparam name="TTargetValue">转换后值类型</typeparam>
@@ -42,9 +42,6 @@ namespace Maomi.Mapper
 			where TSourceValue : struct
 			where TTargetValue : struct
 		{
-			if (typeof(TSourceValue) == typeof(TTargetValue))
-				return Unsafe.As<TSourceValue, TTargetValue>(ref sourceValue);
-
 			var c1 = TypeInfo.GetTypeCode(typeof(TSourceValue));
 			var c2 = TypeInfo.GetTypeCode(typeof(TTargetValue));
 
@@ -54,123 +51,53 @@ namespace Maomi.Mapper
 					$"不支持该类型字段的转换： {typeof(TSourceValue).Name}  => {typeof(TTargetValue).Name}");
 			}
 
-			switch (c1)
+			if (c1 == c2) return Unsafe.As<TSourceValue, TTargetValue>(ref sourceValue);
+
+			switch (c2)
 			{
 				case TypeCode.Boolean:
-					var v1 = Unsafe.As<TSourceValue, Boolean>(ref sourceValue);
+					var v1 = Convert.ToBoolean(sourceValue);
 					return Unsafe.As<Boolean, TTargetValue>(ref v1);
 				case TypeCode.SByte:
-					var v2 = Unsafe.As<TSourceValue, SByte>(ref sourceValue);
+					var v2 = Convert.ToSByte(sourceValue);
 					return Unsafe.As<SByte, TTargetValue>(ref v2);
 				case TypeCode.Byte:
-					var v3 = Unsafe.As<TSourceValue, Byte>(ref sourceValue);
+					var v3 = Convert.ToByte(sourceValue);
 					return Unsafe.As<Byte, TTargetValue>(ref v3);
 				case TypeCode.Int16:
-					var v4 = Unsafe.As<TSourceValue, Int16>(ref sourceValue);
+					var v4 = Convert.ToInt16(sourceValue);
 					return Unsafe.As<Int16, TTargetValue>(ref v4);
 				case TypeCode.UInt16:
-					var v5 = Unsafe.As<TSourceValue, UInt16>(ref sourceValue);
+					var v5 = Convert.ToUInt16(sourceValue);
 					return Unsafe.As<UInt16, TTargetValue>(ref v5);
 				case TypeCode.Int32:
-					var v6 = Unsafe.As<TSourceValue, Int32>(ref sourceValue);
+					var v6 = Convert.ToInt32(sourceValue);
 					return Unsafe.As<Int32, TTargetValue>(ref v6);
 				case TypeCode.UInt32:
-					var v7 = Unsafe.As<TSourceValue, UInt32>(ref sourceValue);
+					var v7 = Convert.ToUInt32(sourceValue);
 					return Unsafe.As<UInt32, TTargetValue>(ref v7);
 				case TypeCode.Int64:
-					var v8 = Unsafe.As<TSourceValue, Int64>(ref sourceValue);
+					var v8 = Convert.ToInt64(sourceValue);
 					return Unsafe.As<Int64, TTargetValue>(ref v8);
 				case TypeCode.UInt64:
-					var v9 = Unsafe.As<TSourceValue, UInt64>(ref sourceValue);
+					var v9 = Convert.ToUInt64(sourceValue);
 					return Unsafe.As<UInt64, TTargetValue>(ref v9);
 				case TypeCode.Single:
-					var v10 = Unsafe.As<TSourceValue, Single>(ref sourceValue);
+					var v10 = Convert.ToSingle(sourceValue);
 					return Unsafe.As<Single, TTargetValue>(ref v10);
 				case TypeCode.Double:
-					var v11 = Unsafe.As<TSourceValue, Double>(ref sourceValue);
+					var v11 = Convert.ToDouble(sourceValue);
 					return Unsafe.As<Double, TTargetValue>(ref v11);
 				case TypeCode.Decimal:
-					var v12 = Unsafe.As<TSourceValue, Decimal>(ref sourceValue);
+					var v12 = Convert.ToDecimal(sourceValue);
 					return Unsafe.As<Decimal, TTargetValue>(ref v12);
 				case TypeCode.Char:
-					var v13 = Unsafe.As<TSourceValue, Char>(ref sourceValue);
+					char v13 = Convert.ToChar(Convert.ToUInt16(sourceValue));
 					return Unsafe.As<Char, TTargetValue>(ref v13);
 			}
 
 			throw new InvalidCastException(
 				$"不支持该类型字段的转换： {typeof(TSourceValue).Name}  => {typeof(TTargetValue).Name}");
-		}
-
-		/// <summary>
-		/// 类型转换
-		/// 值类型映射，支持以下类型互转：<br />
-		/// <see cref="String"/> 、
-		/// <see cref="Boolean"/>、
-		/// <see cref="SByte"/>、
-		/// <see cref="Byte"/>、
-		/// <see cref="Int16"/>、
-		/// <see cref="UInt16"/>、
-		/// <see cref="Int32"/>、
-		/// <see cref="UInt32"/>、
-		/// <see cref="Int64"/>、
-		/// <see cref="UInt64"/>、
-		/// <see cref="Single"/>、
-		/// <see cref="Double"/>、
-		/// <see cref="Decimal"/>、
-		/// <see cref="Char"/> 。<br />
-		/// 不支持 <see cref="DateTime"/> 。<br />
-		/// 注意，大类型转小类型等情况，转换时可能会出现精确度丢失。
-		/// </summary>
-		/// <param name="sourceValue"></param>
-		/// <typeparam name="TSourceValue"></typeparam>
-		/// <typeparam name="TTargetValue"></typeparam>
-		/// <returns></returns>
-		public static TTargetValue ASPrimitive<TSourceValue, TTargetValue>(TSourceValue sourceValue)
-		{
-			return ASHelper<TSourceValue, TTargetValue>.Convert(sourceValue);
-		}
-
-		private static class ASHelper<TSourceValue, TTargetValue>
-		{
-			private static readonly MethodInfo ASMethodInfo;
-			private delegate TTargetValue ASConverter(TSourceValue sourceValue);
-			private static readonly ASConverter ASConvert;
-
-			static ASHelper()
-			{
-				var ms = typeof(ASHelper<,>).GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-				ASMethodInfo = ms.FirstOrDefault(x => x.IsGenericMethod && x.Name == "AS")!;
-
-				if (typeof(TTargetValue) == typeof(string))
-				{
-					ASConvert = (TSourceValue sourceValue) =>
-					{
-						if (sourceValue == null) return default!;
-						return (TTargetValue)(object)sourceValue.ToString()!;
-					};
-				}
-				else if (typeof(TTargetValue).IsValueType && typeof(TSourceValue).IsValueType)
-				{
-					ParameterExpression sourceParameter = Expression.Parameter(typeof(TSourceValue), "a");
-					var asMethodInfo = ASMethodInfo.MakeGenericMethod(typeof(TSourceValue), typeof(TTargetValue));
-					var call = Expression.Call(null, asMethodInfo, sourceParameter);
-					ASConvert = Expression.Lambda<ASConverter>(call, sourceParameter).Compile();
-				}
-				else
-				{
-					throw new InvalidCastException($"不支持 {typeof(TSourceValue).Name} => {typeof(TTargetValue).Name}");
-				}
-			}
-
-			/// <summary>
-			/// 转换为对应类型
-			/// </summary>
-			/// <param name="sourceValue"></param>
-			/// <returns></returns>
-			public static TTargetValue Convert(TSourceValue sourceValue)
-			{
-				return ASConvert(sourceValue);
-			}
 		}
 	}
 }

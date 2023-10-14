@@ -1,451 +1,287 @@
 using Maomi.Mapper;
+using System.Runtime.CompilerServices;
 
 namespace MapperTests;
 
 public class Manual_ASType_Test
 {
-    public class TestValue
-    {
-        public Boolean ValueA { get; set; } = true;
-        public SByte ValueB { get; set; } = 1;
-        public Byte ValueC { get; set; } = 2;
-        public Int16 ValueD { get; set; } = 3;
-        public UInt16 ValueE { get; set; } = 4;
-        public Int32 ValueF { get; set; } = 5;
-        public Int64 ValueG { get; set; } = 6;
-        public UInt64 ValueH { get; set; } = 7;
-        public Single ValueI { get; set; } = 8;
-        public Double ValueJ { get; set; } = 9;
-        public Decimal ValueK { get; set; } = 10;
-        public Char ValueL { get; set; } = (Char)11;
-    }
+	public class TestValue
+	{
+		public bool ValueA { get; set; } = true;
+		public sbyte ValueB { get; set; } = 1;
+		public byte ValueC { get; set; } = 2;
+		public short ValueD { get; set; } = 3;
+		public ushort ValueE { get; set; } = 4;
+		public int ValueF { get; set; } = 5;
+		public uint ValueG { get; set; } = 6;
+		public long ValueH { get; set; } = 7;
+		public ulong ValueI { get; set; } = 8;
+		public float ValueJ { get; set; } = 9;
+		public double ValueK { get; set; } = 10;
+		public decimal ValueL { get; set; } = 11;
+		public char ValueM { get; set; } = (Char)12;
+	}
 
-    public class TestBase<T>
-    {
-        public T ValueA { get; set; }
-        public T ValueB { get; set; }
-        public T ValueC { get; set; }
-        public T ValueD { get; set; }
-        public T ValueE { get; set; }
-        public T ValueF { get; set; }
-        public T ValueG { get; set; }
-        public T ValueH { get; set; }
-        public T ValueI { get; set; }
-        public T ValueJ { get; set; }
-        public T ValueK { get; set; }
-        public T ValueL { get; set; }
-    }
-    public class TestA : TestBase<Boolean> { }
-    public class TestB : TestBase<SByte> { }
-    public class TestC : TestBase<Byte> { }
-    public class TestD : TestBase<Int16> { }
-    public class TestE : TestBase<UInt16> { }
+	public class TestBase<T>
+	{
+		public T ValueA { get; set; }
+		public T ValueB { get; set; }
+		public T ValueC { get; set; }
+		public T ValueD { get; set; }
+		public T ValueE { get; set; }
+		public T ValueF { get; set; }
+		public T ValueG { get; set; }
+		public T ValueH { get; set; }
+		public T ValueI { get; set; }
+		public T ValueJ { get; set; }
+		public T ValueK { get; set; }
+		public T ValueL { get; set; }
+	}
+	public class TestA : TestBase<bool> { }
+	public class TestB : TestBase<sbyte> { }
+	public class TestC : TestBase<byte> { }
+	public class TestD : TestBase<short> { }
+	public class TestE : TestBase<ushort> { }
+	public class TestF : TestBase<int> { }
+	public class TestG : TestBase<uint> { }
+	public class TestH : TestBase<long> { }
+	public class TestI : TestBase<ulong> { }
+	public class TestJ : TestBase<float> { }
+	public class TestK : TestBase<double> { }
+	public class TestL : TestBase<decimal> { }
 
-    public class TestF : TestBase<Int32> { }
-    public class TestG : TestBase<Int64> { }
-    public class TestH : TestBase<UInt64> { }
-    public class TestI : TestBase<Single> { }
-    public class TestJ : TestBase<Double> { }
-    public class TestK : TestBase<Decimal> { }
-    public class TestL : TestBase<Char> { }
+	public class TestM : TestBase<char> { }
 
-    // 类型转换
-    [Fact]
-    public void TypeAS()
-    {
-        var mapper = new MaomiMapper();
-        mapper.Bind<TestValue, TestA>().Build();
-        mapper.Bind<TestValue, TestB>().Build();
-        mapper.Bind<TestValue, TestC>().Build();
-        mapper.Bind<TestValue, TestD>().Build();
-        mapper.Bind<TestValue, TestE>().Build();
-        mapper.Bind<TestValue, TestF>().Build();
-        mapper.Bind<TestValue, TestG>().Build();
-        mapper.Bind<TestValue, TestH>().Build();
-        mapper.Bind<TestValue, TestI>().Build();
-        mapper.Bind<TestValue, TestJ>().Build();
-        mapper.Bind<TestValue, TestK>().Build();
-        mapper.Bind<TestValue, TestL>().Build();
+	// 类型转换
+	[Fact]
+	public void TypeAS()
+	{
+		var mapper = new MaomiMapper();
+		mapper.Bind<TestValue, TestA>().Build();
+		mapper.Bind<TestValue, TestB>().Build();
+		mapper.Bind<TestValue, TestC>().Build();
+		mapper.Bind<TestValue, TestD>().Build();
+		mapper.Bind<TestValue, TestE>().Build();
+		mapper.Bind<TestValue, TestF>().Build();
+		mapper.Bind<TestValue, TestG>().Build();
+		mapper.Bind<TestValue, TestH>().Build();
+		mapper.Bind<TestValue, TestI>().Build();
+		mapper.Bind<TestValue, TestJ>().Build();
+		mapper.Bind<TestValue, TestK>().Build();
+		mapper.Bind<TestValue, TestL>().Build();
+		mapper.Bind<TestValue, TestM>().Build();
 
-        var a = mapper.Map<TestValue, TestA>(new TestValue());
-        var b = mapper.Map<TestValue, TestB>(new TestValue());
-        var c = mapper.Map<TestValue, TestC>(new TestValue());
-        var d = mapper.Map<TestValue, TestD>(new TestValue());
-        var e = mapper.Map<TestValue, TestE>(new TestValue());
-        var f = mapper.Map<TestValue, TestF>(new TestValue());
-        var g = mapper.Map<TestValue, TestG>(new TestValue());
-        var h = mapper.Map<TestValue, TestH>(new TestValue());
-        var i = mapper.Map<TestValue, TestI>(new TestValue());
-        var j = mapper.Map<TestValue, TestJ>(new TestValue());
-        var k = mapper.Map<TestValue, TestK>(new TestValue());
-        var l = mapper.Map<TestValue, TestL>(new TestValue());
+		var v = new TestValue();
+		var a = mapper.Map<TestValue, TestA>(v);
+		var b = mapper.Map<TestValue, TestB>(v);
+		var c = mapper.Map<TestValue, TestC>(v);
+		var d = mapper.Map<TestValue, TestD>(v);
+		var e = mapper.Map<TestValue, TestE>(v);
+		var f = mapper.Map<TestValue, TestF>(v);
+		var g = mapper.Map<TestValue, TestG>(v);
+		var h = mapper.Map<TestValue, TestH>(v);
+		var i = mapper.Map<TestValue, TestI>(v);
+		var j = mapper.Map<TestValue, TestJ>(v);
+		var k = mapper.Map<TestValue, TestK>(v);
+		var l = mapper.Map<TestValue, TestL>(v);
+		var m = mapper.Map<TestValue, TestM>(v);
 
-        Assert.Equal(true, a.ValueA);
-        Assert.Equal(true, a.ValueB);
-        Assert.Equal(true, a.ValueC);
-        Assert.Equal(true, a.ValueD);
-        Assert.Equal(true, a.ValueE);
-        Assert.Equal(true, a.ValueF);
-        Assert.Equal(true, a.ValueG);
-        Assert.Equal(true, a.ValueH);
-        Assert.Equal(true, a.ValueI);
-        Assert.Equal(true, a.ValueJ);
-        Assert.Equal(true, a.ValueK);
-        Assert.Equal(true, a.ValueL);
+		Assert.Equal(Convert.ToBoolean(v.ValueA), a.ValueA);
+		Assert.Equal(Convert.ToBoolean(v.ValueB), a.ValueB);
+		Assert.Equal(Convert.ToBoolean(v.ValueC), a.ValueC);
+		Assert.Equal(Convert.ToBoolean(v.ValueD), a.ValueD);
+		Assert.Equal(Convert.ToBoolean(v.ValueE), a.ValueE);
+		Assert.Equal(Convert.ToBoolean(v.ValueF), a.ValueF);
+		Assert.Equal(Convert.ToBoolean(v.ValueG), a.ValueG);
+		Assert.Equal(Convert.ToBoolean(v.ValueH), a.ValueH);
+		Assert.Equal(Convert.ToBoolean(v.ValueI), a.ValueI);
+		Assert.Equal(Convert.ToBoolean(v.ValueJ), a.ValueJ);
+		Assert.Equal(Convert.ToBoolean(v.ValueK), a.ValueK);
+		Assert.Equal(Convert.ToBoolean(v.ValueL), a.ValueL);
 
-        Assert.Equal(1, b.ValueA);
-        Assert.Equal(1, b.ValueB);
-        Assert.Equal(2, b.ValueC);
-        Assert.Equal(3, b.ValueD);
-        Assert.Equal(4, b.ValueE);
-        Assert.Equal(5, b.ValueF);
-        Assert.Equal(6, b.ValueG);
-        Assert.Equal(6, b.ValueH);
-        Assert.Equal(8, b.ValueI);
-        Assert.Equal(9, b.ValueJ);
-        Assert.Equal(10, b.ValueK);
-        Assert.Equal(11, b.ValueL);
+		Assert.Equal(Convert.ToSByte(v.ValueA), b.ValueA);
+		Assert.Equal(Convert.ToSByte(v.ValueB), b.ValueB);
+		Assert.Equal(Convert.ToSByte(v.ValueC), b.ValueC);
+		Assert.Equal(Convert.ToSByte(v.ValueD), b.ValueD);
+		Assert.Equal(Convert.ToSByte(v.ValueE), b.ValueE);
+		Assert.Equal(Convert.ToSByte(v.ValueF), b.ValueF);
+		Assert.Equal(Convert.ToSByte(v.ValueG), b.ValueG);
+		Assert.Equal(Convert.ToSByte(v.ValueH), b.ValueH);
+		Assert.Equal(Convert.ToSByte(v.ValueI), b.ValueI);
+		Assert.Equal(Convert.ToSByte(v.ValueJ), b.ValueJ);
+		Assert.Equal(Convert.ToSByte(v.ValueK), b.ValueK);
+		Assert.Equal(Convert.ToSByte(v.ValueL), b.ValueL);
 
-        Assert.Equal(1, c.ValueA);
-        Assert.Equal(1, c.ValueB);
-        Assert.Equal(2, c.ValueC);
-        Assert.Equal(3, c.ValueD);
-        Assert.Equal(4, c.ValueE);
-        Assert.Equal(5, c.ValueF);
-        Assert.Equal(6, c.ValueG);
-        Assert.Equal(6, c.ValueH);
-        Assert.Equal(8, c.ValueI);
-        Assert.Equal(9, c.ValueJ);
-        Assert.Equal(10, c.ValueK);
-        Assert.Equal(11, c.ValueL);
+		Assert.Equal(Convert.ToByte(v.ValueA), c.ValueA);
+		Assert.Equal(Convert.ToByte(v.ValueB), c.ValueB);
+		Assert.Equal(Convert.ToByte(v.ValueC), c.ValueC);
+		Assert.Equal(Convert.ToByte(v.ValueD), c.ValueD);
+		Assert.Equal(Convert.ToByte(v.ValueE), c.ValueE);
+		Assert.Equal(Convert.ToByte(v.ValueF), c.ValueF);
+		Assert.Equal(Convert.ToByte(v.ValueG), c.ValueG);
+		Assert.Equal(Convert.ToByte(v.ValueH), c.ValueH);
+		Assert.Equal(Convert.ToByte(v.ValueI), c.ValueI);
+		Assert.Equal(Convert.ToByte(v.ValueJ), c.ValueJ);
+		Assert.Equal(Convert.ToByte(v.ValueK), c.ValueK);
+		Assert.Equal(Convert.ToByte(v.ValueL), c.ValueL);
 
-        Assert.Equal(1, d.ValueA);
-        Assert.Equal(1, d.ValueB);
-        Assert.Equal(2, d.ValueC);
-        Assert.Equal(3, d.ValueD);
-        Assert.Equal(4, d.ValueE);
-        Assert.Equal(5, d.ValueF);
-        Assert.Equal(6, d.ValueG);
-        Assert.Equal(6, d.ValueH);
-        Assert.Equal(8, d.ValueI);
-        Assert.Equal(9, d.ValueJ);
-        Assert.Equal(10, d.ValueK);
-        Assert.Equal(11, d.ValueL);
-
-
-        Assert.Equal(1, e.ValueA);
-        Assert.Equal(1, e.ValueB);
-        Assert.Equal(2, e.ValueC);
-        Assert.Equal(3, e.ValueD);
-        Assert.Equal(4, e.ValueE);
-        Assert.Equal(5, e.ValueF);
-        Assert.Equal(6, e.ValueG);
-        Assert.Equal(6, e.ValueH);
-        Assert.Equal(8, e.ValueI);
-        Assert.Equal(9, e.ValueJ);
-        Assert.Equal(10, e.ValueK);
-        Assert.Equal(11, e.ValueL);
+		Assert.Equal(Convert.ToInt16(v.ValueA), d.ValueA);
+		Assert.Equal(Convert.ToInt16(v.ValueB), d.ValueB);
+		Assert.Equal(Convert.ToInt16(v.ValueC), d.ValueC);
+		Assert.Equal(Convert.ToInt16(v.ValueD), d.ValueD);
+		Assert.Equal(Convert.ToInt16(v.ValueE), d.ValueE);
+		Assert.Equal(Convert.ToInt16(v.ValueF), d.ValueF);
+		Assert.Equal(Convert.ToInt16(v.ValueG), d.ValueG);
+		Assert.Equal(Convert.ToInt16(v.ValueH), d.ValueH);
+		Assert.Equal(Convert.ToInt16(v.ValueI), d.ValueI);
+		Assert.Equal(Convert.ToInt16(v.ValueJ), d.ValueJ);
+		Assert.Equal(Convert.ToInt16(v.ValueK), d.ValueK);
+		Assert.Equal(Convert.ToInt16(v.ValueL), d.ValueL);
 
 
-        Assert.Equal(1, f.ValueA);
-        Assert.Equal(1, f.ValueB);
-        Assert.Equal(2, f.ValueC);
-        Assert.Equal(3, f.ValueD);
-        Assert.Equal(4, f.ValueE);
-        Assert.Equal(5, f.ValueF);
-        Assert.Equal(6, f.ValueG);
-        Assert.Equal(6, f.ValueH);
-        Assert.Equal(8, f.ValueI);
-        Assert.Equal(9, f.ValueJ);
-        Assert.Equal(10, f.ValueK);
-        Assert.Equal(11, f.ValueL);
+		Assert.Equal(Convert.ToUInt16(v.ValueA), e.ValueA);
+		Assert.Equal(Convert.ToUInt16(v.ValueB), e.ValueB);
+		Assert.Equal(Convert.ToUInt16(v.ValueC), e.ValueC);
+		Assert.Equal(Convert.ToUInt16(v.ValueD), e.ValueD);
+		Assert.Equal(Convert.ToUInt16(v.ValueE), e.ValueE);
+		Assert.Equal(Convert.ToUInt16(v.ValueF), e.ValueF);
+		Assert.Equal(Convert.ToUInt16(v.ValueG), e.ValueG);
+		Assert.Equal(Convert.ToUInt16(v.ValueH), e.ValueH);
+		Assert.Equal(Convert.ToUInt16(v.ValueI), e.ValueI);
+		Assert.Equal(Convert.ToUInt16(v.ValueJ), e.ValueJ);
+		Assert.Equal(Convert.ToUInt16(v.ValueK), e.ValueK);
+		Assert.Equal(Convert.ToUInt16(v.ValueL), e.ValueL);
 
 
-        Assert.Equal(1, g.ValueA);
-        Assert.Equal(1, g.ValueB);
-        Assert.Equal(2, g.ValueC);
-        Assert.Equal(3, g.ValueD);
-        Assert.Equal(4, g.ValueE);
-        Assert.Equal(5, g.ValueF);
-        Assert.Equal(6, g.ValueG);
-        Assert.Equal(6, g.ValueH);
-        Assert.Equal(8, g.ValueI);
-        Assert.Equal(9, g.ValueJ);
-        Assert.Equal(10, g.ValueK);
-        Assert.Equal(11, g.ValueL);
+		Assert.Equal(Convert.ToInt32(v.ValueA), f.ValueA);
+		Assert.Equal(Convert.ToInt32(v.ValueB), f.ValueB);
+		Assert.Equal(Convert.ToInt32(v.ValueC), f.ValueC);
+		Assert.Equal(Convert.ToInt32(v.ValueD), f.ValueD);
+		Assert.Equal(Convert.ToInt32(v.ValueE), f.ValueE);
+		Assert.Equal(Convert.ToInt32(v.ValueF), f.ValueF);
+		Assert.Equal(Convert.ToInt32(v.ValueG), f.ValueG);
+		Assert.Equal(Convert.ToInt32(v.ValueH), f.ValueH);
+		Assert.Equal(Convert.ToInt32(v.ValueI), f.ValueI);
+		Assert.Equal(Convert.ToInt32(v.ValueJ), f.ValueJ);
+		Assert.Equal(Convert.ToInt32(v.ValueK), f.ValueK);
+		Assert.Equal(Convert.ToInt32(v.ValueL), f.ValueL);
 
-        Assert.Equal((ulong)1, h.ValueA);
-        Assert.Equal((ulong)1, h.ValueB);
-        Assert.Equal((ulong)2, h.ValueC);
-        Assert.Equal((ulong)3, h.ValueD);
-        Assert.Equal((ulong)4, h.ValueE);
-        Assert.Equal((ulong)5, h.ValueF);
-        Assert.Equal((ulong)6, h.ValueG);
-        Assert.Equal((ulong)6, h.ValueH);
-        Assert.Equal((ulong)8, h.ValueI);
-        Assert.Equal((ulong)9, h.ValueJ);
-        Assert.Equal((ulong)10, h.ValueK);
-        Assert.Equal((ulong)11, h.ValueL);
+		Assert.Equal(Convert.ToUInt32(v.ValueA), g.ValueA);
+		Assert.Equal(Convert.ToUInt32(v.ValueB), g.ValueB);
+		Assert.Equal(Convert.ToUInt32(v.ValueC), g.ValueC);
+		Assert.Equal(Convert.ToUInt32(v.ValueD), g.ValueD);
+		Assert.Equal(Convert.ToUInt32(v.ValueE), g.ValueE);
+		Assert.Equal(Convert.ToUInt32(v.ValueF), g.ValueF);
+		Assert.Equal(Convert.ToUInt32(v.ValueG), g.ValueG);
+		Assert.Equal(Convert.ToUInt32(v.ValueH), g.ValueH);
+		Assert.Equal(Convert.ToUInt32(v.ValueI), g.ValueI);
+		Assert.Equal(Convert.ToUInt32(v.ValueJ), g.ValueJ);
+		Assert.Equal(Convert.ToUInt32(v.ValueK), g.ValueK);
+		Assert.Equal(Convert.ToUInt32(v.ValueL), g.ValueL);
 
+		Assert.Equal(Convert.ToInt64(v.ValueA), h.ValueA);
+		Assert.Equal(Convert.ToInt64(v.ValueB), h.ValueB);
+		Assert.Equal(Convert.ToInt64(v.ValueC), h.ValueC);
+		Assert.Equal(Convert.ToInt64(v.ValueD), h.ValueD);
+		Assert.Equal(Convert.ToInt64(v.ValueE), h.ValueE);
+		Assert.Equal(Convert.ToInt64(v.ValueF), h.ValueF);
+		Assert.Equal(Convert.ToInt64(v.ValueG), h.ValueG);
+		Assert.Equal(Convert.ToInt64(v.ValueH), h.ValueH);
+		Assert.Equal(Convert.ToInt64(v.ValueI), h.ValueI);
+		Assert.Equal(Convert.ToInt64(v.ValueJ), h.ValueJ);
+		Assert.Equal(Convert.ToInt64(v.ValueK), h.ValueK);
+		Assert.Equal(Convert.ToInt64(v.ValueL), h.ValueL);
 
-        Assert.Equal(1, i.ValueA);
-        Assert.Equal(1, i.ValueB);
-        Assert.Equal(2, i.ValueC);
-        Assert.Equal(3, i.ValueD);
-        Assert.Equal(4, i.ValueE);
-        Assert.Equal(5, i.ValueF);
-        Assert.Equal(6, i.ValueG);
-        Assert.Equal(6, i.ValueH);
-        Assert.Equal(8, i.ValueI);
-        Assert.Equal(9, i.ValueJ);
-        Assert.Equal(10, i.ValueK);
-        Assert.Equal(11, i.ValueL);
-
-
-        Assert.Equal(1, j.ValueA);
-        Assert.Equal(1, j.ValueB);
-        Assert.Equal(2, j.ValueC);
-        Assert.Equal(3, j.ValueD);
-        Assert.Equal(4, j.ValueE);
-        Assert.Equal(5, j.ValueF);
-        Assert.Equal(6, j.ValueG);
-        Assert.Equal(6, j.ValueH);
-        Assert.Equal(8, j.ValueI);
-        Assert.Equal(9, j.ValueJ);
-        Assert.Equal(10, j.ValueK);
-        Assert.Equal(11, j.ValueL);
+		Assert.Equal(Convert.ToUInt64(v.ValueA), i.ValueA);
+		Assert.Equal(Convert.ToUInt64(v.ValueB), i.ValueB);
+		Assert.Equal(Convert.ToUInt64(v.ValueC), i.ValueC);
+		Assert.Equal(Convert.ToUInt64(v.ValueD), i.ValueD);
+		Assert.Equal(Convert.ToUInt64(v.ValueE), i.ValueE);
+		Assert.Equal(Convert.ToUInt64(v.ValueF), i.ValueF);
+		Assert.Equal(Convert.ToUInt64(v.ValueG), i.ValueG);
+		Assert.Equal(Convert.ToUInt64(v.ValueH), i.ValueH);
+		Assert.Equal(Convert.ToUInt64(v.ValueI), i.ValueI);
+		Assert.Equal(Convert.ToUInt64(v.ValueJ), i.ValueJ);
+		Assert.Equal(Convert.ToUInt64(v.ValueK), i.ValueK);
+		Assert.Equal(Convert.ToUInt64(v.ValueL), i.ValueL);
 
 
-        Assert.Equal(1, k.ValueA);
-        Assert.Equal(1, k.ValueB);
-        Assert.Equal(2, k.ValueC);
-        Assert.Equal(3, k.ValueD);
-        Assert.Equal(4, k.ValueE);
-        Assert.Equal(5, k.ValueF);
-        Assert.Equal(6, k.ValueG);
-        Assert.Equal(6, k.ValueH);
-        Assert.Equal(8, k.ValueI);
-        Assert.Equal(9, k.ValueJ);
-        Assert.Equal(10, k.ValueK);
-        Assert.Equal(11, k.ValueL);
+		Assert.Equal(Convert.ToSingle(v.ValueA), j.ValueA);
+		Assert.Equal(Convert.ToSingle(v.ValueB), j.ValueB);
+		Assert.Equal(Convert.ToSingle(v.ValueC), j.ValueC);
+		Assert.Equal(Convert.ToSingle(v.ValueD), j.ValueD);
+		Assert.Equal(Convert.ToSingle(v.ValueE), j.ValueE);
+		Assert.Equal(Convert.ToSingle(v.ValueF), j.ValueF);
+		Assert.Equal(Convert.ToSingle(v.ValueG), j.ValueG);
+		Assert.Equal(Convert.ToSingle(v.ValueH), j.ValueH);
+		Assert.Equal(Convert.ToSingle(v.ValueI), j.ValueI);
+		Assert.Equal(Convert.ToSingle(v.ValueJ), j.ValueJ);
+		Assert.Equal(Convert.ToSingle(v.ValueK), j.ValueK);
+		Assert.Equal(Convert.ToSingle(v.ValueL), j.ValueL);
 
 
-        Assert.Equal(1, l.ValueA);
-        Assert.Equal(1, l.ValueB);
-        Assert.Equal(2, l.ValueC);
-        Assert.Equal(3, l.ValueD);
-        Assert.Equal(4, l.ValueE);
-        Assert.Equal(5, l.ValueF);
-        Assert.Equal(6, l.ValueG);
-        Assert.Equal(6, l.ValueH);
-        Assert.Equal(8, l.ValueI);
-        Assert.Equal(9, l.ValueJ);
-        Assert.Equal(10, l.ValueK);
-        Assert.Equal(11, l.ValueL);
-    }
-
-    // 自动创建映射
-    [Fact]
-    public void TypeAS_AutoBind()
-    {
-        var mapper = new MaomiMapper();
-
-        var a = mapper.Map<TestValue, TestA>(new TestValue());
-        var b = mapper.Map<TestValue, TestB>(new TestValue());
-        var c = mapper.Map<TestValue, TestC>(new TestValue());
-        var d = mapper.Map<TestValue, TestD>(new TestValue());
-        var e = mapper.Map<TestValue, TestE>(new TestValue());
-        var f = mapper.Map<TestValue, TestF>(new TestValue());
-        var g = mapper.Map<TestValue, TestG>(new TestValue());
-        var h = mapper.Map<TestValue, TestH>(new TestValue());
-        var i = mapper.Map<TestValue, TestI>(new TestValue());
-        var j = mapper.Map<TestValue, TestJ>(new TestValue());
-        var k = mapper.Map<TestValue, TestK>(new TestValue());
-        var l = mapper.Map<TestValue, TestL>(new TestValue());
-
-        Assert.Equal(true, a.ValueA);
-        Assert.Equal(true, a.ValueB);
-        Assert.Equal(true, a.ValueC);
-        Assert.Equal(true, a.ValueD);
-        Assert.Equal(true, a.ValueE);
-        Assert.Equal(true, a.ValueF);
-        Assert.Equal(true, a.ValueG);
-        Assert.Equal(true, a.ValueH);
-        Assert.Equal(true, a.ValueI);
-        Assert.Equal(true, a.ValueJ);
-        Assert.Equal(true, a.ValueK);
-        Assert.Equal(true, a.ValueL);
-
-        Assert.Equal(1, b.ValueA);
-        Assert.Equal(1, b.ValueB);
-        Assert.Equal(2, b.ValueC);
-        Assert.Equal(3, b.ValueD);
-        Assert.Equal(4, b.ValueE);
-        Assert.Equal(5, b.ValueF);
-        Assert.Equal(6, b.ValueG);
-        Assert.Equal(6, b.ValueH);
-        Assert.Equal(8, b.ValueI);
-        Assert.Equal(9, b.ValueJ);
-        Assert.Equal(10, b.ValueK);
-        Assert.Equal(11, b.ValueL);
-
-        Assert.Equal(1, c.ValueA);
-        Assert.Equal(1, c.ValueB);
-        Assert.Equal(2, c.ValueC);
-        Assert.Equal(3, c.ValueD);
-        Assert.Equal(4, c.ValueE);
-        Assert.Equal(5, c.ValueF);
-        Assert.Equal(6, c.ValueG);
-        Assert.Equal(6, c.ValueH);
-        Assert.Equal(8, c.ValueI);
-        Assert.Equal(9, c.ValueJ);
-        Assert.Equal(10, c.ValueK);
-        Assert.Equal(11, c.ValueL);
-
-        Assert.Equal(1, d.ValueA);
-        Assert.Equal(1, d.ValueB);
-        Assert.Equal(2, d.ValueC);
-        Assert.Equal(3, d.ValueD);
-        Assert.Equal(4, d.ValueE);
-        Assert.Equal(5, d.ValueF);
-        Assert.Equal(6, d.ValueG);
-        Assert.Equal(6, d.ValueH);
-        Assert.Equal(8, d.ValueI);
-        Assert.Equal(9, d.ValueJ);
-        Assert.Equal(10, d.ValueK);
-        Assert.Equal(11, d.ValueL);
+		Assert.Equal(Convert.ToDouble(v.ValueA), k.ValueA);
+		Assert.Equal(Convert.ToDouble(v.ValueB), k.ValueB);
+		Assert.Equal(Convert.ToDouble(v.ValueC), k.ValueC);
+		Assert.Equal(Convert.ToDouble(v.ValueD), k.ValueD);
+		Assert.Equal(Convert.ToDouble(v.ValueE), k.ValueE);
+		Assert.Equal(Convert.ToDouble(v.ValueF), k.ValueF);
+		Assert.Equal(Convert.ToDouble(v.ValueG), k.ValueG);
+		Assert.Equal(Convert.ToDouble(v.ValueH), k.ValueH);
+		Assert.Equal(Convert.ToDouble(v.ValueI), k.ValueI);
+		Assert.Equal(Convert.ToDouble(v.ValueJ), k.ValueJ);
+		Assert.Equal(Convert.ToDouble(v.ValueK), k.ValueK);
+		Assert.Equal(Convert.ToDouble(v.ValueL), k.ValueL);
 
 
-        Assert.Equal(1, e.ValueA);
-        Assert.Equal(1, e.ValueB);
-        Assert.Equal(2, e.ValueC);
-        Assert.Equal(3, e.ValueD);
-        Assert.Equal(4, e.ValueE);
-        Assert.Equal(5, e.ValueF);
-        Assert.Equal(6, e.ValueG);
-        Assert.Equal(6, e.ValueH);
-        Assert.Equal(8, e.ValueI);
-        Assert.Equal(9, e.ValueJ);
-        Assert.Equal(10, e.ValueK);
-        Assert.Equal(11, e.ValueL);
+		Assert.Equal(Convert.ToDecimal(v.ValueA), l.ValueA);
+		Assert.Equal(Convert.ToDecimal(v.ValueB), l.ValueB);
+		Assert.Equal(Convert.ToDecimal(v.ValueC), l.ValueC);
+		Assert.Equal(Convert.ToDecimal(v.ValueD), l.ValueD);
+		Assert.Equal(Convert.ToDecimal(v.ValueE), l.ValueE);
+		Assert.Equal(Convert.ToDecimal(v.ValueF), l.ValueF);
+		Assert.Equal(Convert.ToDecimal(v.ValueG), l.ValueG);
+		Assert.Equal(Convert.ToDecimal(v.ValueH), l.ValueH);
+		Assert.Equal(Convert.ToDecimal(v.ValueI), l.ValueI);
+		Assert.Equal(Convert.ToDecimal(v.ValueJ), l.ValueJ);
+		Assert.Equal(Convert.ToDecimal(v.ValueK), l.ValueK);
+		Assert.Equal(Convert.ToDecimal(v.ValueL), l.ValueL);
 
 
-        Assert.Equal(1, f.ValueA);
-        Assert.Equal(1, f.ValueB);
-        Assert.Equal(2, f.ValueC);
-        Assert.Equal(3, f.ValueD);
-        Assert.Equal(4, f.ValueE);
-        Assert.Equal(5, f.ValueF);
-        Assert.Equal(6, f.ValueG);
-        Assert.Equal(6, f.ValueH);
-        Assert.Equal(8, f.ValueI);
-        Assert.Equal(9, f.ValueJ);
-        Assert.Equal(10, f.ValueK);
-        Assert.Equal(11, f.ValueL);
+		Assert.Equal(Convert.ToChar(Convert.ToUInt16(v.ValueA)), m.ValueA);
+		Assert.Equal(Convert.ToChar(v.ValueB), m.ValueB);
+		Assert.Equal(Convert.ToChar(v.ValueC), m.ValueC);
+		Assert.Equal(Convert.ToChar(v.ValueD), m.ValueD);
+		Assert.Equal(Convert.ToChar(v.ValueE), m.ValueE);
+		Assert.Equal(Convert.ToChar(v.ValueF), m.ValueF);
+		Assert.Equal(Convert.ToChar(v.ValueG), m.ValueG);
+		Assert.Equal(Convert.ToChar(v.ValueH), m.ValueH);
+		Assert.Equal(Convert.ToChar(v.ValueI), m.ValueI);
+		Assert.Equal(Convert.ToChar(Convert.ToUInt16(v.ValueJ)), m.ValueJ);
+		Assert.Equal(Convert.ToChar(Convert.ToUInt16(v.ValueK)), m.ValueK);
+		Assert.Equal(Convert.ToChar(Convert.ToUInt16(v.ValueL)), m.ValueL);
+	}
 
+	public class TestN : TestBase<String> { }
 
-        Assert.Equal(1, g.ValueA);
-        Assert.Equal(1, g.ValueB);
-        Assert.Equal(2, g.ValueC);
-        Assert.Equal(3, g.ValueD);
-        Assert.Equal(4, g.ValueE);
-        Assert.Equal(5, g.ValueF);
-        Assert.Equal(6, g.ValueG);
-        Assert.Equal(6, g.ValueH);
-        Assert.Equal(8, g.ValueI);
-        Assert.Equal(9, g.ValueJ);
-        Assert.Equal(10, g.ValueK);
-        Assert.Equal(11, g.ValueL);
+	// 任意类型转 string
+	[Fact]
+	public void AnyType_AS_String()
+	{
+		var mapper = new MaomiMapper();
+		var a = mapper.Map<TestValue, TestN>(new TestValue());
 
-        Assert.Equal((ulong)1, h.ValueA);
-        Assert.Equal((ulong)1, h.ValueB);
-        Assert.Equal((ulong)2, h.ValueC);
-        Assert.Equal((ulong)3, h.ValueD);
-        Assert.Equal((ulong)4, h.ValueE);
-        Assert.Equal((ulong)5, h.ValueF);
-        Assert.Equal((ulong)6, h.ValueG);
-        Assert.Equal((ulong)6, h.ValueH);
-        Assert.Equal((ulong)8, h.ValueI);
-        Assert.Equal((ulong)9, h.ValueJ);
-        Assert.Equal((ulong)10, h.ValueK);
-        Assert.Equal((ulong)11, h.ValueL);
-
-
-        Assert.Equal(1, i.ValueA);
-        Assert.Equal(1, i.ValueB);
-        Assert.Equal(2, i.ValueC);
-        Assert.Equal(3, i.ValueD);
-        Assert.Equal(4, i.ValueE);
-        Assert.Equal(5, i.ValueF);
-        Assert.Equal(6, i.ValueG);
-        Assert.Equal(6, i.ValueH);
-        Assert.Equal(8, i.ValueI);
-        Assert.Equal(9, i.ValueJ);
-        Assert.Equal(10, i.ValueK);
-        Assert.Equal(11, i.ValueL);
-
-
-        Assert.Equal(1, j.ValueA);
-        Assert.Equal(1, j.ValueB);
-        Assert.Equal(2, j.ValueC);
-        Assert.Equal(3, j.ValueD);
-        Assert.Equal(4, j.ValueE);
-        Assert.Equal(5, j.ValueF);
-        Assert.Equal(6, j.ValueG);
-        Assert.Equal(6, j.ValueH);
-        Assert.Equal(8, j.ValueI);
-        Assert.Equal(9, j.ValueJ);
-        Assert.Equal(10, j.ValueK);
-        Assert.Equal(11, j.ValueL);
-
-
-        Assert.Equal(1, k.ValueA);
-        Assert.Equal(1, k.ValueB);
-        Assert.Equal(2, k.ValueC);
-        Assert.Equal(3, k.ValueD);
-        Assert.Equal(4, k.ValueE);
-        Assert.Equal(5, k.ValueF);
-        Assert.Equal(6, k.ValueG);
-        Assert.Equal(6, k.ValueH);
-        Assert.Equal(8, k.ValueI);
-        Assert.Equal(9, k.ValueJ);
-        Assert.Equal(10, k.ValueK);
-        Assert.Equal(11, k.ValueL);
-
-
-        Assert.Equal(1, l.ValueA);
-        Assert.Equal(1, l.ValueB);
-        Assert.Equal(2, l.ValueC);
-        Assert.Equal(3, l.ValueD);
-        Assert.Equal(4, l.ValueE);
-        Assert.Equal(5, l.ValueF);
-        Assert.Equal(6, l.ValueG);
-        Assert.Equal(6, l.ValueH);
-        Assert.Equal(8, l.ValueI);
-        Assert.Equal(9, l.ValueJ);
-        Assert.Equal(10, l.ValueK);
-        Assert.Equal(11, l.ValueL);
-    }
-
-    public class TestM : TestBase<String> { }
-
-    // 任意类型转 string
-    public void AnyType_AS_String()
-    {
-        var mapper = new MaomiMapper();
-        var a = mapper.Map<TestValue, TestM>(new TestValue());
-
-        Assert.Equal("1", a.ValueA);
-        Assert.Equal("1", a.ValueB);
-        Assert.Equal("2", a.ValueC);
-        Assert.Equal("3", a.ValueD);
-        Assert.Equal("4", a.ValueE);
-        Assert.Equal("5", a.ValueF);
-        Assert.Equal("6", a.ValueG);
-        Assert.Equal("7", a.ValueH);
-        Assert.Equal("8", a.ValueI);
-        Assert.Equal("9", a.ValueJ);
-        Assert.Equal("10", a.ValueK);
-        Assert.Equal("11", a.ValueL);
-    }
+		Assert.Equal("1", a.ValueA);
+		Assert.Equal("1", a.ValueB);
+		Assert.Equal("2", a.ValueC);
+		Assert.Equal("3", a.ValueD);
+		Assert.Equal("4", a.ValueE);
+		Assert.Equal("5", a.ValueF);
+		Assert.Equal("6", a.ValueG);
+		Assert.Equal("7", a.ValueH);
+		Assert.Equal("8", a.ValueI);
+		Assert.Equal("9", a.ValueJ);
+		Assert.Equal("10", a.ValueK);
+		Assert.Equal("11", a.ValueL);
+	}
 }

@@ -1,4 +1,5 @@
 using Maomi.Mapper;
+
 namespace MapperTests;
 
 public class IgnoreMap
@@ -13,11 +14,11 @@ public class IgnoreMap
     }
     public class TestB
     {
-        public string ValueA { get; set; } = "A";
+        public string ValueA { get; set; }
 
-        public string ValueB { get; set; } = "B";
+        public string ValueB { get; set; }
 
-        public string ValueC { get; set; } = "C";
+        public string ValueC { get; set; }
     }
 
     /// <summary>
