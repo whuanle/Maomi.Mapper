@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Maomi.Mapper
 {
@@ -12,138 +16,7 @@ namespace Maomi.Mapper
 		private static readonly MethodInfo MapMethodInfo;
 
 		/// <summary>
-		/// 映射字段，构造：<br />
-		/// (a , b) => <br />
-		/// {
-		///  ... ...
-		/// }
-		/// </summary>
-		/// <typeparam name="TSource">源类型</typeparam>
-		/// <typeparam name="TTarget">目标类型</typeparam>
-		/// <param name="targetField">b.Value 字段</param>
-		/// <param name="mapOption">映射配置</param>
-		/// <returns></returns>
-		internal Delegate MapField<TSource, TTarget>(FieldInfo targetField, MapOption mapOption)
-		{
-			// TSource a;
-			// TTarget b;
-			ParameterExpression sourceParameter = Expression.Parameter(typeof(TSource), "a");
-			ParameterExpression targetParameter = Expression.Parameter(typeof(TTarget), "b");
-
-			// b.Value
-			MemberExpression targetMember = Expression.Field(targetParameter, targetField);
-			var sourceField = typeof(TSource).GetField(targetField.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-			// 在 TSource 中搜索不到对应字段时，b.Value 使用默认值
-			if (sourceField == null)
-			{
-				// (a , b) =>
-				// {
-				//		b.Value = default;
-				// }
-
-				// b.Value = default;
-				BinaryExpression assign = Expression.Assign(targetMember, Expression.Default(targetField.FieldType));
-				// sourceParameter 实际上是多余的，完全用不到
-				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
-			}
-
-			// 如果搜索到 a 也存在相同的字段
-
-			var sourceFieldTypeCode = TypeInfo.GetTypeCode(sourceField.FieldType);
-			var targetFieldTypeCode = TypeInfo.GetTypeCode(targetField.FieldType);
-			MemberExpression sourceMember = Expression.Field(sourceParameter, sourceField);
-
-			// 如果两个都是对象，则走嵌套映射
-			if (sourceFieldTypeCode == TypeCode.Object && targetFieldTypeCode == TypeCode.Object)
-			{
-				// 两个都是数组
-				if (targetField.FieldType.IsArray)
-				{
-					if (sourceField.FieldType == targetField.FieldType)
-					{
-						BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
-						return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
-					}
-				}
-				// 相同类型，直接赋值
-				else if ((sourceField.FieldType == targetField.FieldType) && mapOption.IsObjectReference)
-				{
-					BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
-					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
-				}
-				// 嵌套赋值
-				else
-				{
-					// (a , b) =>
-					// {
-					//      b.Value = new();
-					//		Mapper.Map<Field1,Field2>(a.Value , b.Value);
-					// }
-					var newExpression = Expression.New(targetField.FieldType);
-					BinaryExpression assign = Expression.Assign(targetMember, newExpression);
-					var mapMethodInfo = MapMethodInfo.MakeGenericMethod(sourceField.FieldType, targetField.FieldType);
-					// Mapper.Map<Field1,Field2>(a.Value , b.Value);
-					var call = Expression.Call(Expression.Constant(this), mapMethodInfo, sourceMember, targetMember);
-					var black = Expression.Block(assign, call);
-					Delegate assignDelegate = Expression.Lambda(black, sourceParameter, targetParameter).Compile();
-					return assignDelegate;
-				}
-			}
-			// 两个都是相同的类型，直接赋值
-			else if (sourceFieldTypeCode == targetFieldTypeCode)
-			{
-				// (a,b) =>
-				// {
-				//		b.Value == a.Value
-				// }
-				BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
-				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
-			}
-			else if (targetFieldTypeCode == TypeCode.DateTime)
-			{
-				if (mapOption.ConvertDateTime != null)
-				{
-					var call = Expression.Call(Expression.Constant(mapOption.ConvertDateTime.Target), mapOption.ConvertDateTime.Method, sourceMember);
-					BinaryExpression assign = Expression.Assign(targetMember, call);
-					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
-				}
-			}
-			else if (sourceFieldTypeCode == TypeCode.DateTime)
-			{
-				// b.Value = a.Value.ToString()
-				if (targetFieldTypeCode == TypeCode.String)
-				{
-					var toStringMethodInfo = sourceField.FieldType.GetMethod("ToString", Type.EmptyTypes)!;
-					var call = Expression.Call(sourceMember, toStringMethodInfo);
-					BinaryExpression assign = Expression.Assign(targetMember, call);
-					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
-				}
-			}
-			// 如果两者属于不同的类型，则自动转换类型，但是只支持 struct 类型，不包括 DateTime 类型
-			else
-			{
-				// (a , b) =>
-				// {
-				//		b. Value = Mapper.AS<TSource,TTarget>(a.Value);
-				// }
-
-				// var value = Mapper.AS<TSource,TTarget>(a.Value);
-				var asMethodInfo = ASMethodInfo.MakeGenericMethod(sourceField.FieldType, targetField.FieldType);
-				var call = Expression.Call(null, asMethodInfo, sourceMember);
-
-				// b.Value = value;
-				BinaryExpression assign = Expression.Assign(targetMember, call);
-				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
-			}
-
-			throw new InvalidCastException(
-	$"自动创建规则出错： $({targetField.FieldType.Name}){typeof(TTarget).Name}.{targetField.Name} = $({sourceField.FieldType.Name}{typeof(TSource).Name}.{sourceField.Name}");
-		}
-
-
-		/// <summary>
-		/// 映射属性，构造：<br />
+		/// 映射字段或属性，构造：<br />
 		/// (a , b) => <br />
 		/// {
 		///  ... ...
@@ -155,7 +28,7 @@ namespace Maomi.Mapper
 		/// <param name="mapOption">映射配置</param>
 		/// <returns></returns>
 		/// <exception cref="InvalidCastException"></exception>
-		internal Delegate MapProperty<TSource, TTarget>(PropertyInfo targetField, MapOption mapOption)
+		internal Delegate MapFieldOrProperty<TSource, TTarget>(MemberInfo targetField, MapOption mapOption)
 		{
 			// TSource a;
 			// TTarget b;
@@ -163,8 +36,27 @@ namespace Maomi.Mapper
 			ParameterExpression targetParameter = Expression.Parameter(typeof(TTarget), "b");
 
 			// b.Value
-			MemberExpression targetMember = Expression.Property(targetParameter, targetField);
-			var sourceField = typeof(TSource).GetProperty(targetField.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			MemberExpression targetMember;
+			Type targetFieldType;
+			{
+				if (targetField is FieldInfo fieldInfo)
+				{
+					targetFieldType = fieldInfo.FieldType;
+					targetMember = Expression.Field(targetParameter, fieldInfo);
+				}
+				else if (targetField is PropertyInfo propertyInfo)
+				{
+					targetFieldType = propertyInfo.PropertyType;
+					targetMember = Expression.Property(targetParameter, propertyInfo);
+				}
+				else
+				{
+					throw new InvalidCastException(
+						$"框架处理出错，请提交 Issue！ {typeof(TTarget).Name}.{targetField.Name} 既不是字段也不是属性");
+				}
+			}
+
+			var sourceField = typeof(TSource).GetMember(targetField.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault();
 
 			// 在 TSource 中搜索不到对应字段时，b.Value 使用默认值
 			if (sourceField == null)
@@ -175,34 +67,70 @@ namespace Maomi.Mapper
 				// }
 
 				// b.Value = default;
-				BinaryExpression assign = Expression.Assign(targetMember, Expression.Default(targetField.PropertyType));
+				BinaryExpression assign = Expression.Assign(targetMember, Expression.Default(targetFieldType));
 				// sourceParameter 实际上是多余的，完全用不到
 				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+			}
+			MemberExpression sourceMember;
+			Type sourceFieldType;
+			{
+				if (sourceField is FieldInfo fieldInfo)
+				{
+					sourceFieldType = fieldInfo.FieldType;
+					sourceMember = Expression.Field(sourceParameter, fieldInfo);
+				}
+				else if (sourceField is PropertyInfo propertyInfo)
+				{
+					sourceFieldType = propertyInfo.PropertyType;
+					sourceMember = Expression.Property(sourceParameter, propertyInfo);
+				}
+				else
+				{
+					throw new InvalidCastException(
+						$"框架处理出错，请提交 Issue！ {typeof(TSource).Name}.{sourceField.Name} 既不是字段也不是属性");
+				}
 			}
 
 			// 如果搜索到 a 也存在相同的字段
 
-			var sourceFieldTypeCode = TypeInfo.GetTypeCode(sourceField.PropertyType);
-			var targetFieldTypeCode = TypeInfo.GetTypeCode(targetField.PropertyType);
-			MemberExpression sourceMember = Expression.Property(sourceParameter, sourceField);
+			var sourceFieldTypeCode = TypeInfo.GetTypeCode(sourceFieldType);
+			var targetFieldTypeCode = TypeInfo.GetTypeCode(targetFieldType);
 
 			// 如果两个都是对象，则走嵌套映射
 			if (sourceFieldTypeCode == TypeCode.Object && targetFieldTypeCode == TypeCode.Object)
 			{
 				// 两个都是数组
-				if (targetField.PropertyType.IsArray)
+				if (targetFieldType.IsArray)
 				{
-					if (sourceField.PropertyType == targetField.PropertyType)
+					if (sourceFieldType == targetFieldType)
 					{
 						BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
 						return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 					}
 				}
 				// 相同类型，直接赋值
-				else if ((sourceField.PropertyType == targetField.PropertyType) && mapOption.IsObjectReference)
+				else if ((sourceFieldType == targetFieldType) && mapOption.IsObjectReference)
 				{
 					BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
 					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+				}
+				// 目标字段为集合类型
+				else if (targetFieldType.IsAssignableTo(typeof(IEnumerable)))
+				{
+					// 两个都是集合类型
+					if (sourceFieldType.IsAssignableTo(typeof(IEnumerable)))
+					{
+						// b.Value = 转换集合(a.Value);
+						var isType = sourceFieldType.GetInterfaces().FirstOrDefault(x => x.GetGenericTypeDefinition() == typeof(IEnumerable<>))!.GenericTypeArguments[0]!;
+						var convertDel = ConvertCollectionHelper.GetExpression(isType, targetFieldType);
+						var convertMethodInfo = typeof(ConvertCollectionHelper<,>).MakeGenericType(isType, targetFieldType).GetMethod("ConvertCollection");
+						if (convertMethodInfo != null)
+						{
+							var call = Expression.Call(null, convertMethodInfo, sourceMember);
+							BinaryExpression assign = Expression.Assign(targetMember, call);
+							return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+						}
+					}
 				}
 				// 嵌套赋值
 				else
@@ -213,11 +141,11 @@ namespace Maomi.Mapper
 					//		Mapper.Map<Field1,Field2>(a.Value , b.Value);
 					// }
 					// b.Value = new(); 
-					var newExpression = Expression.New(targetField.PropertyType);
+					var newExpression = Expression.New(targetFieldType);
 					BinaryExpression assign = Expression.Assign(targetMember, newExpression);
 
 					// Mapper.Map<Field1,Field2>(a.Value , b.Value);
-					var mapMethodInfo = MapMethodInfo.MakeGenericMethod(sourceField.PropertyType, targetField.PropertyType);
+					var mapMethodInfo = MapMethodInfo.MakeGenericMethod(sourceFieldType, targetFieldType);
 					var call = Expression.Call(Expression.Constant(this), mapMethodInfo, sourceMember, targetMember);
 					var black = Expression.Block(assign, call);
 					Delegate assignDelegate = Expression.Lambda(black, sourceParameter, targetParameter).Compile();
@@ -243,16 +171,12 @@ namespace Maomi.Mapper
 					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 				}
 			}
-			else if (sourceFieldTypeCode == TypeCode.DateTime)
+			else if (targetFieldTypeCode == TypeCode.String)
 			{
-				// b.Value = a.Value.ToString()
-				if (targetFieldTypeCode == TypeCode.String)
-				{
-					var toStringMethodInfo = sourceField.PropertyType.GetMethod("ToString", Type.EmptyTypes)!;
-					var call = Expression.Call(sourceMember, toStringMethodInfo);
-					BinaryExpression assign = Expression.Assign(targetMember, call);
-					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
-				}
+				var toStringMethodInfo = sourceFieldType.GetMethod("ToString", Type.EmptyTypes)!;
+				var call = Expression.Call(sourceMember, toStringMethodInfo);
+				BinaryExpression assign = Expression.Assign(targetMember, call);
+				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 			}
 			// 如果两者属于不同的类型，则自动转换类型，但是只支持 struct 类型，不包括 DateTime 类型
 			else
@@ -263,7 +187,7 @@ namespace Maomi.Mapper
 				// }
 
 				// var value = Mapper.AS<TSource,TTarget>(a.Value);
-				var asMethodInfo = ASMethodInfo.MakeGenericMethod(sourceField.PropertyType, targetField.PropertyType);
+				var asMethodInfo = ASMethodInfo.MakeGenericMethod(sourceFieldType, targetFieldType);
 				var call = Expression.Call(null, asMethodInfo, sourceMember);
 
 				// b.Value = value;
@@ -271,7 +195,7 @@ namespace Maomi.Mapper
 				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
 			}
 			throw new InvalidCastException(
-	$"自动创建规则出错： $({targetField.PropertyType.Name}){typeof(TTarget).Name}.{targetField.Name} = $({sourceField.PropertyType.Name}){typeof(TSource).Name}.{sourceField.Name}");
+	$"自动创建规则出错： $({targetFieldType.Name}){typeof(TTarget).Name}.{targetField.Name} = $({sourceFieldType.Name}){typeof(TSource).Name}.{sourceField.Name}");
 		}
 
 		/// <summary>

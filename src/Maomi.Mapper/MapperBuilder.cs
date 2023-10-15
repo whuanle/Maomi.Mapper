@@ -192,14 +192,14 @@ namespace Maomi.Mapper
 
 					// 如果不处理私有字段
 					if (!_mapOption.IncludePrivate && field.IsPrivate) continue;
-					Delegate assignDel = _mapper.MapField<TSource, TTarget>(field, _mapOption);
+					Delegate assignDel = _mapper.MapFieldOrProperty<TSource, TTarget>(field, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}
 				else if (item is PropertyInfo property)
 				{
 					if (!property.CanWrite) continue;
 
-					Delegate assignDel = _mapper.MapProperty<TSource, TTarget>(property, _mapOption);
+					Delegate assignDel = _mapper.MapFieldOrProperty<TSource, TTarget>(property, _mapOption);
 					_mapInfo.Binds.Add(item, assignDel);
 				}
 			}

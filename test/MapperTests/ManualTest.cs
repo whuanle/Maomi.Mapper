@@ -76,7 +76,7 @@ public class ManualTest
             option =>
             {
                 option.IncludePrivate = true;
-            });
+            }).Map(a => "111", b => "ValueC");
         build.Build();
         mapper.Bind<TestC, TestDD>().Build();
 

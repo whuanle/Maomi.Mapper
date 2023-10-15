@@ -21,7 +21,6 @@ public class Manual_ASType_Test
 		public decimal ValueL { get; set; } = 11;
 		public char ValueM { get; set; } = (Char)12;
 	}
-
 	public class TestBase<T>
 	{
 		public T ValueA { get; set; }
@@ -49,7 +48,6 @@ public class Manual_ASType_Test
 	public class TestJ : TestBase<float> { }
 	public class TestK : TestBase<double> { }
 	public class TestL : TestBase<decimal> { }
-
 	public class TestM : TestBase<char> { }
 
 	// 类型转换
@@ -271,7 +269,7 @@ public class Manual_ASType_Test
 		var mapper = new MaomiMapper();
 		var a = mapper.Map<TestValue, TestN>(new TestValue());
 
-		Assert.Equal("1", a.ValueA);
+		Assert.Equal("True", a.ValueA);
 		Assert.Equal("1", a.ValueB);
 		Assert.Equal("2", a.ValueC);
 		Assert.Equal("3", a.ValueD);
