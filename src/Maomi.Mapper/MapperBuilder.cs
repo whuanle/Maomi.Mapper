@@ -37,8 +37,6 @@ namespace Maomi.Mapper
 		private readonly MapInfo _mapInfo;
 		private readonly MapOption _mapOption;
 
-
-
 		internal MapperBuilder(MaomiMapper mapper, MapInfo mapInfo, MapOption mapOption)
 		{
 			_mapper = mapper;
@@ -58,8 +56,13 @@ namespace Maomi.Mapper
 		/// <returns></returns>
 		public MapperBuilder<TSource, TTarget> Ignore<TField>(Expression<Func<TTarget, TField>> field)
 		{
+			IsBuild = false;
+
 			MemberInfo p = GetMember(field);
-			_mapInfo.Binds[p] = MaomiMapper.SetDefaultValue<TTarget>(p);
+			_mapInfo.Binds[p] = new FieldOption
+			{
+				IsIgnore = true
+			};
 			return this;
 		}
 
@@ -78,24 +81,13 @@ namespace Maomi.Mapper
 		public MapperBuilder<TSource, TTarget> Map<TValue, TField>(Func<TSource, TValue> valueFunc,
 			Expression<Func<TTarget, TField>> field)
 		{
+			IsBuild = false;
+
 			MemberInfo p = GetMember(field);
-
-			// 生成 (a , b) =>
-			// {
-			//		b.Value = b.Value
-			// }
-
-			try
+			_mapInfo.Binds[p] = new FieldOption
 			{
-				_mapInfo.Binds[p] = MaomiMapper.BuildAssign<TSource, TTarget>(p, valueFunc);
-			}
-			catch (Exception ex)
-			{
-				var typeName = "";
-				if (p is FieldInfo fieldInfo) typeName = fieldInfo.FieldType.Name;
-				else if (p is PropertyInfo propertyInfo) typeName = propertyInfo.PropertyType.Name;
-				throw new InvalidCastException($"生成表达式报错，$({typeName}){typeof(TTarget).Name}.{p.Name} = ({typeof(TSource).Name}) => $({typeof(TValue).Name}) ，{System.Environment.NewLine} 请检查自定义的取值表达式是否有误", ex);
-			}
+				Delegate = valueFunc
+			};
 			return this;
 		}
 
@@ -177,6 +169,13 @@ namespace Maomi.Mapper
 		public override MaomiMapper Build()
 		{
 			IsBuild = true;
+			List<Expression> exList = new List<Expression>();
+
+			// TSource a;
+			// TTarget b;
+			ParameterExpression sourceParameter = Expression.Parameter(typeof(TSource), "_a");
+			ParameterExpression targetParameter = Expression.Parameter(typeof(TTarget), "_b");
+
 			foreach (var item in _mapInfo.MemberInfos)
 			{
 				bool hasDelegate = _mapInfo.Binds.TryGetValue(item, out _);
@@ -192,18 +191,20 @@ namespace Maomi.Mapper
 
 					// 如果不处理私有字段
 					if (!_mapOption.IncludePrivate && field.IsPrivate) continue;
-					Delegate assignDel = _mapper.MapFieldOrProperty<TSource, TTarget>(field, _mapOption);
-					_mapInfo.Binds.Add(item, assignDel);
+					Expression assignDel = _mapper.MapFieldOrProperty<TSource, TTarget>(sourceParameter, targetParameter, field, _mapOption);
+					exList.Add(assignDel);
 				}
 				else if (item is PropertyInfo property)
 				{
 					if (!property.CanWrite) continue;
-
-					Delegate assignDel = _mapper.MapFieldOrProperty<TSource, TTarget>(property, _mapOption);
-					_mapInfo.Binds.Add(item, assignDel);
+					Expression assignDel = _mapper.MapFieldOrProperty<TSource, TTarget>(sourceParameter, targetParameter, property, _mapOption);
+					exList.Add(assignDel);
 				}
 			}
 
+			var block = Expression.Block( exList);
+			var del = Expression.Lambda(block,sourceParameter, targetParameter).Compile();
+			_mapInfo.Delegate = del;
 			return _mapper;
 		}
 	}

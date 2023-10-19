@@ -5,6 +5,12 @@ using System.Reflection;
 
 namespace Maomi.Mapper
 {
+	internal class FieldOption
+	{
+		public bool IsIgnore { get; init; }
+		public Delegate? Delegate { get; init; }
+	}
+
 	/// <summary>
 	/// 映射信息
 	/// </summary>
@@ -43,13 +49,19 @@ namespace Maomi.Mapper
 		/// </summary>
 		public MemberInfo[] MemberInfos => _memberInfos;
 
-		private readonly Dictionary<MemberInfo, Delegate> _binds = new();
-
+		private readonly Dictionary<MemberInfo, FieldOption> _binds = new();
 
 		/// <summary>
 		/// 字段或属性绑定的委托
 		/// </summary>
-		public Dictionary<MemberInfo, Delegate> Binds => _binds;
+		public Dictionary<MemberInfo, FieldOption> Binds => _binds;
+
+
+		/// <summary>
+		///  (a,b)=>{}
+		/// </summary>
+		/// <value></value>
+		public Delegate? Delegate { get; set; }
 
 		public bool Equals(MapInfo? other)
 		{
@@ -71,4 +83,8 @@ namespace Maomi.Mapper
 			return false;
 		}
 	}
+
+
+
+
 }

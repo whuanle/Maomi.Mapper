@@ -183,48 +183,37 @@ namespace Maomi.Mapper
 			if (mapperData == null) throw new InvalidCastException($"未创建 {typeof(TSource).Name} 到的映射 {typeof(TTarget).Name}，该错误为框架内部错误，请提交 Issue！");
 			// 如果开发者没有调用 Build()
 			if (!mapperData.IsBuild) mapperData.Build();
-
-			var mapInfo = mapperData.MapInfo;
-
-			// 对 TTarget 的字段或属性逐个映射
-			foreach (var item in mapInfo.MemberInfos)
+			try
 			{
-				// 已提前配置映射委托代码
-				bool hasFunc = mapInfo.Binds.TryGetValue(item, out var @delegate);
-				// 查找不到映射规则
-				if (!hasFunc) continue;
-
-				if (item is FieldInfo field)
-				{
-					// 如果不处理私有字段
-					if (field.IsPrivate && !mapInfo.MapOption.IncludePrivate) continue;
-
-					// 忽略运行时生成的属性的私有字段
-					if (item.Name.EndsWith(">k__BackingField")) continue;
-
-					try
-					{
-						@delegate!.DynamicInvoke(source, target);
-					}
-					catch (Exception ex)
-					{
-						throw new InvalidCastException($"从 {typeof(TSource).Name} => [{field.FieldType.Name}]{typeof(TTarget).Name}.{field.Name} 出错，请检查异常信息： ", ex);
-					}
-				}
-				else if (item is PropertyInfo property)
-				{
-					if (!property.CanWrite) continue;
-					try
-					{
-						@delegate!.DynamicInvoke(source, target);
-					}
-					catch (Exception ex)
-					{
-						throw new InvalidCastException($"从 {typeof(TSource).Name}  =>   [{property.PropertyType.Name}]{typeof(TTarget).Name}.{property.Name} ，请检查异常信息：", ex);
-					}
-				}
+				mapperData.MapInfo.Delegate.DynamicInvoke(source, target);
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidCastException($"未创建 {typeof(TSource).Name} 映射到 {typeof(TTarget).Name} 出现异常", ex);
 			}
 			return target;
+		}
+
+		public Delegate GetDelegate<TSource, TTarget>()
+			where TSource : class
+			where TTarget : class
+		{
+			var mapperData = Maps.FirstOrDefault(x => x.MapInfo.Source == typeof(TSource) && x.MapInfo.Target == typeof(TTarget));
+			if (mapperData == null)
+			{
+				// 对未创建的服务
+				if (IsAutoBuild)
+				{
+					// 运行时创建映射绑定
+					Bind<TSource, TTarget>().Build();
+					mapperData = Maps.FirstOrDefault(x => x.MapInfo.Source == typeof(TSource) && x.MapInfo.Target == typeof(TTarget));
+				}
+			}
+
+			if (mapperData == null) throw new InvalidCastException($"未创建 {typeof(TSource).Name} 到的映射 {typeof(TTarget).Name}，该错误为框架内部错误，请提交 Issue！");
+			// 如果开发者没有调用 Build()
+			if (!mapperData.IsBuild) mapperData.Build();
+			return mapperData.MapInfo.Delegate;
 		}
 
 		/// <summary>

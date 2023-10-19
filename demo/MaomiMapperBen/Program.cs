@@ -80,6 +80,11 @@ namespace MaomiMapperBen
 	{
 		private AutoMapper.IMapper _autoMapper;
 		private MaomiMapper _maomi;
+
+		private Delegate d1;
+		private Delegate d2;
+		private Delegate d3;
+
 		[GlobalSetup]
 		public async Task Setup()
 		{
@@ -97,9 +102,12 @@ namespace MaomiMapperBen
 
 			_maomi = new MaomiMapper();
 			_maomi
-				.Bind<TestValue, TestB>()
+				.Bind<TestValue, TestB>().Build()
 				.Bind<TestValue, TestC>().Build()
 				.Bind<TestValue, TestD>().Build();
+			d1 = _maomi.GetDelegate<TestValue, TestB>();
+			d2 = _maomi.GetDelegate<TestValue, TestC>();
+			d3 = _maomi.GetDelegate<TestValue, TestD>();
 		}
 
 		[Benchmark]
@@ -118,6 +126,15 @@ namespace MaomiMapperBen
 
 
 		[Benchmark]
+		public void ASDelegate()
+		{
+			_ = d1.DynamicInvoke(new TestValue(), new TestB());
+			_ = d2.DynamicInvoke(new TestValue(), new TestC());
+		}
+
+
+
+		[Benchmark]
 		public void _AutoMapper()
 		{
 			_ = _autoMapper.Map<TestValue, TestD>(new TestValue());
@@ -128,6 +145,13 @@ namespace MaomiMapperBen
 		{
 			_ = _maomi.Map<TestValue, TestD>(new TestValue());
 		}
+
+		[Benchmark]
+		public void _Delegate()
+		{
+			_ = d3.DynamicInvoke(new TestValue(), new TestD());
+		}
+
 	}
 
 

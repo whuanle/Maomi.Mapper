@@ -24,17 +24,14 @@ namespace Maomi.Mapper
 		/// </summary>
 		/// <typeparam name="TSource">源类型</typeparam>
 		/// <typeparam name="TTarget">目标类型</typeparam>
+		/// <param name="sourceParameter">源对象</param>
+		/// <param name="targetParameter">目标对象</param>
 		/// <param name="targetField">目标属性 b.Value</param>
 		/// <param name="mapOption">映射配置</param>
 		/// <returns></returns>
 		/// <exception cref="InvalidCastException"></exception>
-		internal Delegate MapFieldOrProperty<TSource, TTarget>(MemberInfo targetField, MapOption mapOption)
+		internal Expression MapFieldOrProperty<TSource, TTarget>(ParameterExpression sourceParameter, ParameterExpression targetParameter, MemberInfo targetField, MapOption mapOption)
 		{
-			// TSource a;
-			// TTarget b;
-			ParameterExpression sourceParameter = Expression.Parameter(typeof(TSource), "a");
-			ParameterExpression targetParameter = Expression.Parameter(typeof(TTarget), "b");
-
 			// b.Value
 			MemberExpression targetMember;
 			Type targetFieldType;
@@ -69,7 +66,7 @@ namespace Maomi.Mapper
 				// b.Value = default;
 				BinaryExpression assign = Expression.Assign(targetMember, Expression.Default(targetFieldType));
 				// sourceParameter 实际上是多余的，完全用不到
-				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+				return assign;
 			}
 			MemberExpression sourceMember;
 			Type sourceFieldType;
@@ -105,14 +102,14 @@ namespace Maomi.Mapper
 					if (sourceFieldType == targetFieldType)
 					{
 						BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
-						return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+						return assign;
 					}
 				}
 				// 相同类型，直接赋值
 				else if ((sourceFieldType == targetFieldType) && mapOption.IsObjectReference)
 				{
 					BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
-					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+					return assign;
 				}
 				// 目标字段为集合类型
 				else if (targetFieldType.IsAssignableTo(typeof(IEnumerable)))
@@ -128,7 +125,7 @@ namespace Maomi.Mapper
 						{
 							var call = Expression.Call(null, convertMethodInfo, sourceMember);
 							BinaryExpression assign = Expression.Assign(targetMember, call);
-							return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+							return assign;
 						}
 					}
 				}
@@ -148,8 +145,7 @@ namespace Maomi.Mapper
 					var mapMethodInfo = MapMethodInfo.MakeGenericMethod(sourceFieldType, targetFieldType);
 					var call = Expression.Call(Expression.Constant(this), mapMethodInfo, sourceMember, targetMember);
 					var black = Expression.Block(assign, call);
-					Delegate assignDelegate = Expression.Lambda(black, sourceParameter, targetParameter).Compile();
-					return assignDelegate;
+					return black;
 				}
 			}
 			// 两个都是相同的类型，直接赋值
@@ -160,7 +156,7 @@ namespace Maomi.Mapper
 				//		b.Value == a.Value
 				// }
 				BinaryExpression assign = Expression.Assign(targetMember, sourceMember);
-				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+				return assign;
 			}
 			else if (targetFieldTypeCode == TypeCode.DateTime)
 			{
@@ -168,7 +164,7 @@ namespace Maomi.Mapper
 				{
 					var call = Expression.Call(Expression.Constant(mapOption.ConvertDateTime.Target), mapOption.ConvertDateTime.Method, sourceMember);
 					BinaryExpression assign = Expression.Assign(targetMember, call);
-					return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+					return assign;
 				}
 			}
 			else if (targetFieldTypeCode == TypeCode.String)
@@ -176,7 +172,7 @@ namespace Maomi.Mapper
 				var toStringMethodInfo = sourceFieldType.GetMethod("ToString", Type.EmptyTypes)!;
 				var call = Expression.Call(sourceMember, toStringMethodInfo);
 				BinaryExpression assign = Expression.Assign(targetMember, call);
-				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+				return assign;
 			}
 			// 如果两者属于不同的类型，则自动转换类型，但是只支持 struct 类型，不包括 DateTime 类型
 			else
@@ -192,11 +188,13 @@ namespace Maomi.Mapper
 
 				// b.Value = value;
 				BinaryExpression assign = Expression.Assign(targetMember, call);
-				return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+				return assign;
 			}
 			throw new InvalidCastException(
 	$"自动创建规则出错： $({targetFieldType.Name}){typeof(TTarget).Name}.{targetField.Name} = $({sourceFieldType.Name}){typeof(TSource).Name}.{sourceField.Name}");
 		}
+
+		#region 改版之后，这两个用不到了
 
 		/// <summary>
 		/// 封装委托，将委托返回的值赋予 b.Value
@@ -244,7 +242,7 @@ namespace Maomi.Mapper
 		/// <typeparam name="TTarget"></typeparam>
 		/// <param name="memberInfo"></param>
 		/// <returns></returns>
-		internal static Delegate SetDefaultValue<TTarget>(MemberInfo memberInfo)
+		internal static Expression SetDefaultValue<TTarget>(MemberInfo memberInfo)
 		{
 			BinaryExpression assign;
 			// TTarget b;
@@ -268,7 +266,9 @@ namespace Maomi.Mapper
 				throw new InvalidCastException($"{memberInfo.DeclaringType?.Name}.{memberInfo.Name} 不是字段或属性");
 			}
 			// sourceParameter 实际上是多余的，完全用不到
-			return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+			return assign;
 		}
+
+		#endregion
 	}
 }
