@@ -10,12 +10,14 @@ MaomiMapper 是一个使用表达式树构造生成对象成员映射的框架�
 
 MaomiMapper 与  AutoMapper 对比：
 
-| Method        |        Mean |     Error |    StdDev |   Gen0 | Allocated |
-| ------------- | ----------: | --------: | --------: | -----: | --------: |
-| ASAutoMapper  |   148.66 ns |  1.781 ns |  1.666 ns | 0.0362 |     304 B |
-| ASMaomiMapper | 6,562.87 ns | 14.360 ns | 13.433 ns | 0.2670 |    2265 B |
-| _AutoMapper   |    69.21 ns |  0.134 ns |  0.105 ns | 0.0191 |     160 B |
-| _MaomiMapper  | 3,203.79 ns | 11.527 ns | 10.783 ns | 0.1221 |    1040 B |
+| Method        |      Mean |    Error |   StdDev |   Gen0 | Allocated |
+| ------------- | --------: | -------: | -------: | -----: | --------: |
+| ASAutoMapper  | 146.30 ns | 1.759 ns | 1.645 ns | 0.0362 |     304 B |
+| ASMaomiMapper | 817.46 ns | 6.467 ns | 6.049 ns | 0.0935 |     784 B |
+| ASDelegate    | 668.56 ns | 5.050 ns | 4.724 ns | 0.0839 |     704 B |
+| _AutoMapper   |  67.56 ns | 0.438 ns | 0.410 ns | 0.0191 |     160 B |
+| _MaomiMapper  | 242.03 ns | 0.751 ns | 0.702 ns | 0.0315 |     264 B |
+| _Delegate     | 188.64 ns | 1.251 ns | 1.109 ns | 0.0267 |     224 B |
 
 > AS 开头的方法表示有类型转换。
 

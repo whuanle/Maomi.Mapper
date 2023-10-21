@@ -4,13 +4,13 @@
 		<OutputType>Library</OutputType>
 		<TargetFrameworks>net7.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 		<generateDocumentationFile>true</generateDocumentationFile>
 		<Description>对象映射框架</Description>
 		<Copyright></Copyright>
-		<PackageProjectUrl>https://github.com/whuanle/maomi</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/whuanle/Maomi.Mapper</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<RepositoryUrl>https://github.com/whuanle/maomi</RepositoryUrl>
+		<RepositoryUrl>https://github.com/whuanle/Maomi.Mapper</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
