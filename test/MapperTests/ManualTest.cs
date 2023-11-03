@@ -85,16 +85,18 @@ public class ManualTest
             ValueA = "A",
             ValueB = "B"
         });
-        var c = mapper.Map<TestC, TestDD>(new TestC
+
+		Assert.Equal("A", b.ValueA);
+		Assert.Equal("B", b.ValueB);
+		Assert.Equal("111", typeof(TestD).GetProperty("ValueC", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(b));
+		Assert.Equal("D", typeof(TestD).GetField("ValueD", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(b));
+
+		var c = mapper.Map<TestC, TestDD>(new TestC
         {
             ValueA = "A",
             ValueB = "B"
         });
 
-        Assert.Equal("A", b.ValueA);
-        Assert.Equal("B", b.ValueB);
-        Assert.Equal("C", typeof(TestD).GetProperty("ValueC", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(b));
-        Assert.Equal("D", typeof(TestD).GetField("ValueD", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(b));
 
         Assert.Equal("A", c.ValueA);
         Assert.Equal("B", c.ValueB);
