@@ -178,8 +178,12 @@ namespace Maomi.Mapper
 
 			foreach (var item in _mapInfo.MemberInfos)
 			{
-				bool hasDelegate = _mapInfo.Binds.TryGetValue(item, out _);
-				if (hasDelegate) continue;
+				if (_mapInfo.Binds.TryGetValue(item, out var option))
+				{
+					if (!option.IsIgnore && option.Delegate != null)
+						exList.Add(MaomiMapper.BuildAssign<TSource, TTarget>(sourceParameter, targetParameter, item, option.Delegate));
+					continue;
+				}
 
 				// 不自动处理未配置映射的字段或属性
 				if (!_mapOption.AutoMap) continue;
@@ -202,8 +206,8 @@ namespace Maomi.Mapper
 				}
 			}
 
-			var block = Expression.Block( exList);
-			var del = Expression.Lambda(block,sourceParameter, targetParameter).Compile();
+			var block = Expression.Block(exList);
+			var del = Expression.Lambda(block, sourceParameter, targetParameter).Compile();
 			_mapInfo.Delegate = del;
 			return _mapper;
 		}

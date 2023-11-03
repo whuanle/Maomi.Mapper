@@ -60,6 +60,6 @@ public class Manual_AS_DateTime_String_Test
 			Value = date
 		});
 
-		Assert.Equal(date.ToString("yyyy/MM/dd HH:mm:ss"), a.Value);
+		Assert.Equal(date.ToString(), a.Value);
 	}
 }

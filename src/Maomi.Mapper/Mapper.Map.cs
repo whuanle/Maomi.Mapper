@@ -201,17 +201,14 @@ namespace Maomi.Mapper
 		/// </summary>
 		/// <typeparam name="TSource"></typeparam>
 		/// <typeparam name="TTarget"></typeparam>
+		/// <param name="sourceParameter"></param>
+		/// <param name="targetParameter"></param>
 		/// <param name="memberInfo">b.Value 成员</param>
 		/// <param name="delegate"> a=> a.Value... 委托</param>
 		/// <returns></returns>
 		/// <exception cref="InvalidCastException"></exception>
-		internal static Delegate BuildAssign<TSource, TTarget>(MemberInfo memberInfo, Delegate @delegate)
+		internal static Expression BuildAssign<TSource, TTarget>(ParameterExpression sourceParameter, ParameterExpression targetParameter, MemberInfo memberInfo, Delegate @delegate)
 		{
-			// TSource a;
-			// TTarget b;
-			ParameterExpression sourceParameter = Expression.Parameter(typeof(TSource), "a");
-			ParameterExpression targetParameter = Expression.Parameter(typeof(TTarget), "b");
-
 			// b.Value
 			MemberExpression targetMember;
 			if (memberInfo is FieldInfo field)
@@ -232,7 +229,7 @@ namespace Maomi.Mapper
 			MethodCallExpression delegateCall = Expression.Call(instance, @delegate.Method, sourceParameter);
 			// b.Value = @delegate.DynamicInvoke(a);
 			BinaryExpression assign = Expression.Assign(targetMember, delegateCall);
-			return Expression.Lambda(assign, sourceParameter, targetParameter).Compile();
+			return assign;
 		}
 
 
