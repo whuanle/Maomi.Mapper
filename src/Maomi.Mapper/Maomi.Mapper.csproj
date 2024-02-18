@@ -2,9 +2,9 @@
 
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<TargetFrameworks>net7.0</TargetFrameworks>
+		<TargetFrameworks>net8.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
-		<Version>1.3.0</Version>
+		<Version>2.0.0</Version>
 		<generateDocumentationFile>true</generateDocumentationFile>
 		<Description>对象映射框架</Description>
 		<Copyright></Copyright>
@@ -12,7 +12,17 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/whuanle/Maomi.Mapper</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
+		<Title>猫咪对象映射框架</Title>
+		<Description>Maomi.Mapper 框架是一个简洁的 .NET 对象映射框架。</Description>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>packageIcon.png</PackageIcon>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="packageIcon.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 	<ItemGroup>
 	  <None Include="..\..\README.md">
